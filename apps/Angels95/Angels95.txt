@@ -1,0 +1,47 @@
+##### Introdcution #####
+
+
+3D Liminal FPS/MMO using C, CPP, Assembly
+
+
+
+
+Core Engine (OzWorld)
+
+
+OzWorld
+ - OzMpx
+
+
+-Server Based
+-MMO/Small Scale
+-FPS
+-Magical Elements / Spells
+-oddly 90s Aesthetic 1997 style?
+-
+
+already running: 
+- basic build
+- gtk + opengl init 
+- Basic Map Loading and saving as .ozmap file 
+- bsp brushes
+- debug logging 
+
+first steps:
+basic rendering of bsp brushes
+-cube
+-plane
+-sphere
+-dome
+-cylindar
+
+-camera freemovement
+-loading and saving of maps 
+
+
+
+
+Angel95:
+
+
+ 
