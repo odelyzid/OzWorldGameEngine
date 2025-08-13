@@ -3,6 +3,8 @@
 #include "oz/oz_log.h"
 #include "oz/oz_bsp.h"
 #include "oz/oz_assets.h"
+#include "oz/oz_tex.h"
+#include "oz/oz_bundle.h"
 #include "editor.h"
 #include "oz/oz_camera.h"
 #include <GL/gl.h>
@@ -157,14 +159,45 @@ static void choose_and_remember(EditorUi* ui, const char* title, const char* fil
 static void on_import_texture(GSimpleAction* a, GVariant* p, gpointer user_data) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
     choose_and_remember(ui, "Import Texture", "OzTex files (*.oztex)", "*.oztex", &ui->last_texture_path);
+    // If GL texture is not set, upload the imported texture as preview
+    if (ui->last_texture_path && ui->gl_area) {
+        int w=0,h=0,c=0; unsigned char* px=NULL;
+        if (oz_tex_load_oztex(ui->last_texture_path, &w,&h,&c, &px)) {
+            GLuint tex = 0; glGenTextures(1, &tex);
+            glBindTexture(GL_TEXTURE_2D, tex);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            GLenum fmt = (c == 4) ? GL_RGBA : GL_RGB;
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glTexImage2D(GL_TEXTURE_2D, 0, (c==4?GL_RGBA:GL_RGB), w, h, 0, fmt, GL_UNSIGNED_BYTE, px);
+            ui->gl_tex_brush = tex; ui->gl_tex_w = w; ui->gl_tex_h = h;
+            oz_tex_free(px);
+            if (ui->viewport) gtk_widget_queue_draw(ui->viewport);
+        } else {
+            OZ_WARN("Failed to load texture: %s", ui->last_texture_path);
+        }
+    }
 }
 static void on_import_bundle(GSimpleAction* a, GVariant* p, gpointer user_data) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
     choose_and_remember(ui, "Import Mesh Bundle", "OzBag files (*.ozbag)", "*.ozbag", &ui->last_bundle_path);
+    if (ui->last_bundle_path) {
+        OzBundle b = {0};
+        if (oz_bundle_load(ui->last_bundle_path, &b)) {
+            OZ_INFO("Bundle loaded: %zu entries", b.count);
+            // For now, just keep it ephemeral and free. Later: populate object browser from entries.
+            oz_bundle_free(&b);
+        } else {
+            OZ_WARN("Failed to load bundle: %s", ui->last_bundle_path);
+        }
+    }
 }
 static void on_import_music(GSimpleAction* a, GVariant* p, gpointer user_data) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
     choose_and_remember(ui, "Import Music", "OzMux files (*.ozmux)", "*.ozmux", &ui->last_music_path);
+    // Stub: actual streaming via SDL_mixer/OpenAL would be handled in runtime app; editor just stores path.
 }
 
 static void action_build_common(const char* what) {
@@ -1311,6 +1344,15 @@ static void action_open_object_browser(GSimpleAction* a, GVariant* p, gpointer u
     const char* picks[] = { "Health", "Ammo" };
     GtkWidget* picks_list = build_template_list(picks, 2, G_CALLBACK(add_pickup_template), ui);
     gtk_notebook_append_page(GTK_NOTEBOOK(notebook), picks_list, gtk_label_new("Pickups"));
+    // Assets tab: show last imported asset paths (if any)
+    GtkWidget* assets_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
+    if (ui->last_texture_path) gtk_box_pack_start(GTK_BOX(assets_box), gtk_label_new(ui->last_texture_path), FALSE, FALSE, 0);
+    if (ui->last_bundle_path)  gtk_box_pack_start(GTK_BOX(assets_box), gtk_label_new(ui->last_bundle_path), FALSE, FALSE, 0);
+    if (ui->last_music_path)   gtk_box_pack_start(GTK_BOX(assets_box), gtk_label_new(ui->last_music_path), FALSE, FALSE, 0);
+    if (!ui->last_texture_path && !ui->last_bundle_path && !ui->last_music_path) {
+        gtk_box_pack_start(GTK_BOX(assets_box), gtk_label_new("No assets imported yet. Use File → Import."), FALSE, FALSE, 0);
+    }
+    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), assets_box, gtk_label_new("Assets"));
     // Nodes tab (Player Start)
     const char* nodes[] = { "Player Start" };
     GtkWidget* nodes_list = build_template_list(nodes, 1, G_CALLBACK(add_playerstart_template), ui);

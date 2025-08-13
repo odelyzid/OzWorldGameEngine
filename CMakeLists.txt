@@ -39,6 +39,8 @@ add_library(ozcore
   src/core/oz_camera.c
   src/core/oz_debug.c
   src/core/oz_assets.c
+  src/core/oz_tex.c
+  src/core/oz_bundle.c
 )
 
 target_include_directories(ozcore PUBLIC
