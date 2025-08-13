@@ -24,12 +24,13 @@ void oz_log_logv(OzLogLevel level, const char* fmt, va_list args);
 typedef void (*OzLogSink)(OzLogLevel level, const char* formatted_line);
 void oz_log_set_sink(OzLogSink sink, bool also_stderr);
 
-#define OZ_TRACE(fmt, ...) oz_log_log(OZ_LOG_TRACE, (fmt), ##__VA_ARGS__)
-#define OZ_DEBUG(fmt, ...) oz_log_log(OZ_LOG_DEBUG, (fmt), ##__VA_ARGS__)
-#define OZ_INFO(fmt, ...)  oz_log_log(OZ_LOG_INFO,  (fmt), ##__VA_ARGS__)
-#define OZ_WARN(fmt, ...)  oz_log_log(OZ_LOG_WARN,  (fmt), ##__VA_ARGS__)
-#define OZ_ERROR(fmt, ...) oz_log_log(OZ_LOG_ERROR, (fmt), ##__VA_ARGS__)
-#define OZ_FATAL(fmt, ...) oz_log_log(OZ_LOG_FATAL, (fmt), ##__VA_ARGS__)
+// Use __VA_ARGS__ passthrough to avoid pedantic warnings when no extra args
+#define OZ_TRACE(...) oz_log_log(OZ_LOG_TRACE, __VA_ARGS__)
+#define OZ_DEBUG(...) oz_log_log(OZ_LOG_DEBUG, __VA_ARGS__)
+#define OZ_INFO(...)  oz_log_log(OZ_LOG_INFO,  __VA_ARGS__)
+#define OZ_WARN(...)  oz_log_log(OZ_LOG_WARN,  __VA_ARGS__)
+#define OZ_ERROR(...) oz_log_log(OZ_LOG_ERROR, __VA_ARGS__)
+#define OZ_FATAL(...) oz_log_log(OZ_LOG_FATAL, __VA_ARGS__)
 
 #ifdef __cplusplus
 }

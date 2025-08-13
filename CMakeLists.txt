@@ -43,6 +43,7 @@ add_library(ozcore
   src/core/oz_tex.c
   src/core/oz_bundle.c
   src/core/oz_audio_sdlmixer.c
+  src/render/oz_render_common.c
 )
 
 target_include_directories(ozcore PUBLIC
@@ -131,30 +132,55 @@ if(PkgConfig_FOUND)
   endif()
 endif()
 
-# Platform layer (SDL2 + OpenGL)
-if(OZ_BUILD_DEMO AND OZ_HAVE_SDL2 AND OZ_HAVE_OPENGL)
-  add_library(ozplatform_sdl
+# Platform layer (SDL2). Build both GL and SW backends; choose at link time
+if(OZ_BUILD_DEMO AND OZ_HAVE_SDL2)
+  add_library(ozplatform_sdl_gl
     src/platform/sdl/oz_platform_sdl.c
   )
-  target_include_directories(ozplatform_sdl PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-  )
-  target_compile_definitions(ozplatform_sdl PUBLIC OZ_HAVE_SDL2=1)
+  target_include_directories(ozplatform_sdl_gl PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_compile_definitions(ozplatform_sdl_gl PUBLIC OZ_HAVE_SDL2=1)
   if(TARGET SDL2::SDL2)
-    target_link_libraries(ozplatform_sdl PUBLIC SDL2::SDL2)
+    target_link_libraries(ozplatform_sdl_gl PUBLIC SDL2::SDL2)
   elseif(TARGET PkgConfig::SDL2)
-    target_link_libraries(ozplatform_sdl PUBLIC PkgConfig::SDL2)
+    target_link_libraries(ozplatform_sdl_gl PUBLIC PkgConfig::SDL2)
   endif()
   if(OpenGL_FOUND)
-    target_link_libraries(ozplatform_sdl PUBLIC OpenGL::GL)
+    target_link_libraries(ozplatform_sdl_gl PUBLIC OpenGL::GL)
+    set_target_properties(ozplatform_sdl_gl PROPERTIES OUTPUT_NAME ozplatform_sdl)
   endif()
-  target_link_libraries(ozplatform_sdl PUBLIC ozcore)
+
+  add_library(ozplatform_sdl_sw
+    src/platform/sdl/oz_platform_sdl_sw.c
+  )
+  target_include_directories(ozplatform_sdl_sw PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_compile_definitions(ozplatform_sdl_sw PUBLIC OZ_HAVE_SDL2=1)
+  if(TARGET SDL2::SDL2)
+    target_link_libraries(ozplatform_sdl_sw PUBLIC SDL2::SDL2)
+  elseif(TARGET PkgConfig::SDL2)
+    target_link_libraries(ozplatform_sdl_sw PUBLIC PkgConfig::SDL2)
+  endif()
+  target_link_libraries(ozplatform_sdl_sw PUBLIC ozcore)
 endif()
 
 # Demo app
-if(OZ_BUILD_DEMO AND OZ_HAVE_SDL2 AND OZ_HAVE_OPENGL)
-  add_executable(oz_demo apps/oz_demo/main.c)
-  target_link_libraries(oz_demo PRIVATE ozcore ozplatform_sdl)
+if(OZ_BUILD_DEMO AND OZ_HAVE_SDL2)
+  add_executable(oz_demo
+    apps/oz_demo/main.c
+    src/render/oz_render_gl.c
+    src/render/oz_render_soft.c
+  )
+  if(OZ_HAVE_OPENGL)
+    target_link_libraries(oz_demo PRIVATE ozcore ozplatform_sdl_gl)
+  else()
+    target_link_libraries(oz_demo PRIVATE ozcore ozplatform_sdl_sw)
+  endif()
+  # Link Cairo for software rendering fallback
+  if(PkgConfig_FOUND)
+    pkg_check_modules(CAIRO QUIET IMPORTED_TARGET cairo)
+    if(TARGET PkgConfig::CAIRO)
+      target_link_libraries(oz_demo PRIVATE PkgConfig::CAIRO)
+    endif()
+  endif()
   # Link math library for trig functions used by oz_demo
   if(UNIX)
     target_link_libraries(oz_demo PRIVATE m)
@@ -164,12 +190,44 @@ else()
   message(STATUS "oz_demo disabled (SDL2/OpenGL not found or OZ_BUILD_DEMO=OFF)")
 endif()
 
+# Software-only demo that never links OpenGL backend (safe for remote X)
+if(OZ_BUILD_DEMO AND OZ_HAVE_SDL2)
+  add_executable(oz_demo_sw
+    apps/oz_demo/main_sw.c
+    src/render/oz_render_soft.c
+  )
+  target_link_libraries(oz_demo_sw PRIVATE ozcore ozplatform_sdl_sw)
+  if(PkgConfig_FOUND)
+    if(TARGET PkgConfig::CAIRO)
+      target_link_libraries(oz_demo_sw PRIVATE PkgConfig::CAIRO)
+    else()
+      pkg_check_modules(CAIRO QUIET IMPORTED_TARGET cairo)
+      if(TARGET PkgConfig::CAIRO)
+        target_link_libraries(oz_demo_sw PRIVATE PkgConfig::CAIRO)
+      endif()
+    endif()
+  endif()
+  if(UNIX)
+    target_link_libraries(oz_demo_sw PRIVATE m)
+  endif()
+  target_include_directories(oz_demo_sw PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+endif()
+
 # Editor (GTK3)
 if(OZ_BUILD_EDITOR AND OZ_HAVE_GTK3)
-  add_executable(oz_editor editor/main.c)
+  add_executable(oz_editor
+    src/editor/app.c
+    src/editor/input.c
+    src/editor/ui/ui.c
+    editor/main.c
+    src/render/oz_render_soft.c
+    src/render/oz_render_gl.c
+  )
   if(TARGET PkgConfig::GTK3)
     target_link_libraries(oz_editor PRIVATE PkgConfig::GTK3)
   endif()
+  # Allow including editor headers like "editor.h"
+  target_include_directories(oz_editor PRIVATE ${CMAKE_SOURCE_DIR}/editor)
   target_link_libraries(oz_editor PRIVATE ozcore)
   if(OpenGL_FOUND)
     target_link_libraries(oz_editor PRIVATE OpenGL::GL)

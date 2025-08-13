@@ -1,6 +1,12 @@
 #include "oz/oz_debug.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stddef.h>
+
+#if !defined(_POSIX_C_SOURCE) || _POSIX_C_SOURCE < 200809L
+static char* oz_strdup(const char* s){ if(!s) return NULL; size_t n=strlen(s); char* r=(char*)malloc(n+1); if(!r) return NULL; memcpy(r,s,n); r[n]='\0'; return r; }
+#define strdup oz_strdup
+#endif
 
 #ifndef OZ_MAX_WATCHES
 #define OZ_MAX_WATCHES 256

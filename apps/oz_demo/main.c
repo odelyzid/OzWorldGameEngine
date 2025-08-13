@@ -5,12 +5,14 @@
 #include <math.h>
 #include "oz/oz_bsp.h"
 #include "oz/oz_camera.h"
+#include "oz/oz_render.h"
 #include "oz/oz_audio.h"
 #ifdef OZ_HAVE_SDL2
 #include <GL/gl.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cairo/cairo.h>
 #endif
 
 static void draw_box_wireframe(const OzBrushBox* b) {
@@ -99,18 +101,8 @@ static void draw_map_wireframe(const OzMap* map) {
 
 static void apply_camera(const OzCamera* cam) {
 #ifdef OZ_HAVE_SDL2
-    glEnable(GL_DEPTH_TEST);
-    glMatrixMode(GL_PROJECTION); glLoadIdentity();
     int w=0,h=0; oz_platform_get_window_size(&w,&h); if (h==0) h=1;
-    float aspect = (float)w/(float)h;
-    float f = 60.0f; float n=0.1f, fa=100.0f;
-    float top = n * tanf(f * 3.14159f/360.0f);
-    float right = top * aspect;
-    glFrustum(-right, right, -top, top, n, fa);
-    glMatrixMode(GL_MODELVIEW); glLoadIdentity();
-    glRotatef(cam->pitch * 57.29578f, 1,0,0);
-    glRotatef(cam->yaw * 57.29578f, 0,0,1);
-    glTranslatef(-cam->position.x, -cam->position.y, -cam->position.z);
+    oz_render_gl_apply_camera(cam, w, h);
 #else
     (void)cam;
 #endif
@@ -215,7 +207,47 @@ int main(int argc, char** argv) {
     }
 
     if (oz_platform_is_software_renderer()) {
-        OZ_WARN("Running in software mode (no GL context). Exiting after diagnostics.");
+        OZ_WARN("Running in software mode (no GL context). Using Cairo-style software renderer.");
+        OzCamera cam; oz_camera_init(&cam, OZ_CAMERA_FREEMOVE);
+        if (argc >= 3 && strcmp(argv[1], "--playerstart") == 0 && argv[2]) {
+            double x=0,y=0,z=0,yaw=0; if (sscanf(argv[2], "%lf,%lf,%lf,%lf", &x,&y,&z,&yaw) == 4) {
+                oz_camera_set_position(&cam, (float)x, (float)y, (float)z);
+                oz_camera_set_angles(&cam, (float)yaw, 0.0f, 0.0f);
+            }
+        }
+        OzMap map; oz_map_init(&map);
+        oz_map_add_box(&map, (OzVec3){0.0f, 0.0f, 0.0f}, (OzVec3){1.0f, 1.0f, 1.0f});
+        oz_map_add_cylinder(&map, (OzVec3){1.5f, 0.0f, 0.0f}, 0.5f, 0.5f, 1.0f, 16);
+        bool quit = false;
+        while (!quit) {
+            if (!oz_platform_pump_events(&quit)) break;
+            int w=0,h=0; oz_platform_get_window_size(&w,&h); if (w<=0||h<=0){ w=640; h=480; }
+            // Allocate ARGB32 image
+            const int stride = w * 4;
+            unsigned char* pixels = (unsigned char*)malloc((size_t)stride * (size_t)h);
+            if (!pixels) break;
+            // Clear background
+            for (int y = 0; y < h; ++y) {
+                unsigned char* row = pixels + (size_t)y * (size_t)stride;
+                for (int x = 0; x < w; ++x) {
+                    row[x*4+0] = 0xFF; // B
+                    row[x*4+1] = 0x1F; // G
+                    row[x*4+2] = 0x1A; // R
+                    row[x*4+3] = 0xFF; // A
+                }
+            }
+            // Very simple wireframe overlay using oz_render_soft helpers via Cairo surface
+            cairo_surface_t* surf = cairo_image_surface_create_for_data(pixels, CAIRO_FORMAT_ARGB32, w, h, stride);
+            cairo_t* cr = cairo_create(surf);
+            oz_render_soft_draw_grid_axes(cr, w, h, &cam, true, true);
+            oz_render_soft_draw_map(cr, w, h, &map, &cam, -1);
+            cairo_destroy(cr);
+            cairo_surface_destroy(surf);
+            oz_platform_present_software_rgba32(pixels, w, h, stride);
+            free(pixels);
+            oz_platform_sleep_ms(16);
+        }
+        oz_map_free(&map);
         oz_platform_shutdown();
         return 0;
     }
@@ -254,10 +286,10 @@ int main(int argc, char** argv) {
 
         oz_platform_clear(0.1f, 0.12f, 0.15f, 1.0f);
         apply_camera(&cam);
-        draw_map_filled(&loaded);
+        oz_render_gl_draw_map_filled(&loaded);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3f(0,0,0);
-        draw_map_wireframe(&loaded);
+        oz_render_gl_draw_map_wireframe(&loaded);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         // Debug overlay (simple bitmap text via glRasterPos + GLUT-like is absent; use color bars instead)
         // For now, just draw axes at the camera position for reference

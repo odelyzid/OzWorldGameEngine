@@ -34,6 +34,12 @@ void oz_platform_get_window_size(int* out_width, int* out_height);
 // Useful for apps to avoid issuing GL calls when running over remote X servers.
 bool oz_platform_is_software_renderer(void);
 
+// When in software mode, present an ARGB32 image buffer to the window.
+// - pixels: pointer to top-left of image
+// - width/height: in pixels
+// - stride: bytes per row
+void oz_platform_present_software_rgba32(const unsigned char* pixels, int width, int height, int stride);
+
 // Minimal key input API for demo/editor controls
 typedef enum OzKey {
     OZ_KEY_W,

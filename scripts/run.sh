@@ -53,6 +53,13 @@ run_game() {
     echo "Game demo not built or SDL2/OpenGL not found."
     exit 1
   fi
+  # If running over remote X or indirect GL, use the SW-only demo that never touches GLX
+  if [[ -n "${DISPLAY:-}" && "${DISPLAY:0:1}" != ":" ]] || [[ -n "${LIBGL_ALWAYS_INDIRECT:-}" ]]; then
+    if [[ -f "$build_dir/oz_demo_sw" ]]; then
+      "$build_dir/oz_demo_sw"
+      return
+    fi
+  fi
   "$build_dir/oz_demo"
 }
 

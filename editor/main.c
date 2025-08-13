@@ -1,17 +1,21 @@
+// This file now only contains the editor UI implementation (activate impl) and related callbacks.
 #include <gtk/gtk.h>
-#include "oz/oz_core.h"
 #include "oz/oz_log.h"
 #include "oz/oz_bsp.h"
 #include "oz/oz_assets.h"
 #include "oz/oz_tex.h"
 #include "oz/oz_bundle.h"
 #include "editor.h"
+#include "oz/editor_input.h"
 #include "oz/oz_camera.h"
 #include <GL/gl.h>
+#include "oz/oz_render.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-static GtkApplication* g_app_singleton = NULL;
+#include "oz/editor_app.h"
+#include "oz/editor_ui.h"
+GtkApplication* g_app_singleton = NULL;
 
 // Forward declarations for cross-calls
 struct EditorUi;
@@ -54,161 +58,25 @@ static gboolean env_flag_is_true(const char* name) {
 
 // EditorUi is now in editor/editor.h
 
-static void action_quit(GSimpleAction* action, GVariant* parameter, gpointer user_data) {
-    (void)action; (void)parameter;
-    EditorUi* ui = (EditorUi*)user_data;
-    if (ui) {
-        ui->shutting_down = TRUE;
-        if (ui->tick_id) { g_source_remove(ui->tick_id); ui->tick_id = 0; }
-        if (ui->redraw_id) { g_source_remove(ui->redraw_id); ui->redraw_id = 0; }
-        if (ui->window && GTK_IS_WIDGET(ui->window)) {
-            gtk_widget_destroy(ui->window);
-        }
-    }
-    GApplication* app = g_application_get_default();
-    if (app) g_application_quit(app);
-}
+// moved to src/editor/ui/ui.c
 
-static void action_open(GSimpleAction* action, GVariant* parameter, gpointer user_data) {
-    (void)action; (void)parameter;
-    EditorUi* ui = (EditorUi*)user_data;
-    GtkWindow* parent = GTK_WINDOW(ui->window);
-    GtkWidget* dialog = gtk_file_chooser_dialog_new("Open Map",
-        GTK_WINDOW(ui->window),
-        GTK_FILE_CHOOSER_ACTION_OPEN,
-        "_Cancel", GTK_RESPONSE_CANCEL,
-        "_Open", GTK_RESPONSE_ACCEPT,
-        NULL);
-    GtkFileFilter* filter = gtk_file_filter_new();
-    gtk_file_filter_set_name(filter, "OzMap files (*.ozone; *.ozmap)");
-    gtk_file_filter_add_pattern(filter, "*.ozone");
-    gtk_file_filter_add_pattern(filter, "*.ozmap");
-    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-        char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        OZ_INFO("Open file: %s", filename);
-        OzMap loaded; oz_map_init(&loaded);
-        if (!oz_map_load_text(filename, &loaded)) {
-            OZ_ERROR("Failed to load %s", filename);
-        } else {
-            oz_map_free(&ui->map);
-            ui->map = loaded;
-            g_free(ui->current_path);
-            ui->current_path = g_strdup(filename);
-            // request a redraw
-            OZ_INFO("Map loaded: %zu brushes from %s", ui->map.count, ui->current_path);
-            if (ui->viewport && GTK_IS_WIDGET(ui->viewport)) gtk_widget_queue_draw(ui->viewport);
-        }
-        g_free(filename);
-    }
-    gtk_widget_destroy(dialog);
-}
+// moved to src/editor/ui/ui.c
 
-static void action_save(GSimpleAction* action, GVariant* parameter, gpointer user_data) {
-    (void)action; (void)parameter;
-    EditorUi* ui = (EditorUi*)user_data;
-    GtkWidget* dialog = gtk_file_chooser_dialog_new("Save Map",
-        GTK_WINDOW(ui->window),
-        GTK_FILE_CHOOSER_ACTION_SAVE,
-        "_Cancel", GTK_RESPONSE_CANCEL,
-        "_Save", GTK_RESPONSE_ACCEPT,
-        NULL);
-    gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-        char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        // Ensure .ozone extension by default (accept legacy .ozmap too)
-        char* to_save = NULL;
-        if (filename && !(g_str_has_suffix(filename, ".ozone") || g_str_has_suffix(filename, ".ozmap"))) {
-            to_save = g_strconcat(filename, ".ozone", NULL);
-        }
-        const char* path = to_save ? to_save : filename;
-        OZ_INFO("Save file: %s", path);
-        if (!oz_map_save_text(path, &ui->map)) {
-            OZ_ERROR("Failed to save %s", filename);
-        } else {
-            g_free(ui->current_path);
-            ui->current_path = g_strdup(path);
-            OZ_INFO("Map saved: %zu brushes to %s", ui->map.count, ui->current_path);
-            if (ui->viewport && GTK_IS_WIDGET(ui->viewport)) gtk_widget_queue_draw(ui->viewport);
-        }
-        if (to_save) g_free(to_save);
-        g_free(filename);
-    }
-    gtk_widget_destroy(dialog);
-}
+// moved to src/editor/ui/ui.c
 
-static void choose_and_remember(EditorUi* ui, const char* title, const char* filter_name, const char* pattern, char** last_path_out) {
-    GtkWidget* dialog = gtk_file_chooser_dialog_new(title,
-        GTK_WINDOW(ui->window), GTK_FILE_CHOOSER_ACTION_OPEN,
-        "_Cancel", GTK_RESPONSE_CANCEL,
-        "_Open", GTK_RESPONSE_ACCEPT,
-        NULL);
-    GtkFileFilter* filter = gtk_file_filter_new();
-    gtk_file_filter_set_name(filter, filter_name);
-    gtk_file_filter_add_pattern(filter, pattern);
-    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-        char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        if (last_path_out) { g_free(*last_path_out); *last_path_out = g_strdup(filename); }
-        OZ_INFO("Imported: %s", filename);
-        g_free(filename);
-    }
-    gtk_widget_destroy(dialog);
-}
+// moved to src/editor/ui/ui.c
 
-static void on_import_texture(GSimpleAction* a, GVariant* p, gpointer user_data) {
-    (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    choose_and_remember(ui, "Import Texture", "OzTex files (*.oztex)", "*.oztex", &ui->last_texture_path);
-    // If GL texture is not set, upload the imported texture as preview
-    if (ui->last_texture_path && ui->gl_area) {
-        int w=0,h=0,c=0; unsigned char* px=NULL;
-        if (oz_tex_load_oztex(ui->last_texture_path, &w,&h,&c, &px)) {
-            GLuint tex = 0; glGenTextures(1, &tex);
-            glBindTexture(GL_TEXTURE_2D, tex);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            GLenum fmt = (c == 4) ? GL_RGBA : GL_RGB;
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            glTexImage2D(GL_TEXTURE_2D, 0, (c==4?GL_RGBA:GL_RGB), w, h, 0, fmt, GL_UNSIGNED_BYTE, px);
-            ui->gl_tex_brush = tex; ui->gl_tex_w = w; ui->gl_tex_h = h;
-            oz_tex_free(px);
-            if (ui->viewport) gtk_widget_queue_draw(ui->viewport);
-        } else {
-            OZ_WARN("Failed to load texture: %s", ui->last_texture_path);
-        }
-    }
-}
-static void on_import_bundle(GSimpleAction* a, GVariant* p, gpointer user_data) {
-    (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    choose_and_remember(ui, "Import Mesh Bundle", "OzBag files (*.ozbag)", "*.ozbag", &ui->last_bundle_path);
-    if (ui->last_bundle_path) {
-        OzBundle b = {0};
-        if (oz_bundle_load(ui->last_bundle_path, &b)) {
-            OZ_INFO("Bundle loaded: %zu entries", b.count);
-            // For now, just keep it ephemeral and free. Later: populate object browser from entries.
-            oz_bundle_free(&b);
-        } else {
-            OZ_WARN("Failed to load bundle: %s", ui->last_bundle_path);
-        }
-    }
-}
-static void on_import_music(GSimpleAction* a, GVariant* p, gpointer user_data) {
-    (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    choose_and_remember(ui, "Import Music", "OzMux files (*.ozmux)", "*.ozmux", &ui->last_music_path);
-    // Stub: actual streaming via SDL_mixer/OpenAL would be handled in runtime app; editor just stores path.
-}
+// moved to src/editor/ui/ui.c
+// moved to src/editor/ui/ui.c
+// moved to src/editor/ui/ui.c
 
 static void action_build_common(const char* what) {
     OZ_INFO("Build: %s (stub)", what);
 }
 
-static void action_build_map(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; action_build_common("Map"); }
-static void action_build_light(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; action_build_common("Light"); }
-static void action_build_bsp(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; action_build_common("BSP"); }
-static void action_build_brushes(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; action_build_common("Brushes"); }
+// moved to src/editor/ui/ui.c
 
+/* moved to src/editor/ui/ui.c
 static void spawn_process(char const* const argv[]) {
     GError* error = NULL;
     // Ensure SDL respects remote X stability: prefer indirect GL unless user overrides
@@ -231,9 +99,11 @@ static void spawn_process(char const* const argv[]) {
     }
     if (envp) g_strfreev(envp);
 }
+*/
 
-static void action_launch_editor(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; const char* argv[] = { "./build/oz_editor", NULL }; spawn_process(argv); }
-static void action_launch_game(GSimpleAction* a, GVariant* p, gpointer u) {
+/* moved to src/editor/ui/ui.c
+void action_launch_editor(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; const char* argv[] = { "./build/oz_editor", NULL }; spawn_process(argv); }
+void action_launch_game(GSimpleAction* a, GVariant* p, gpointer u) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)u;
     // Pass a start position/yaw if a PlayerStart exists
     char arg_pos[128] = {0};
@@ -251,7 +121,8 @@ static void action_launch_game(GSimpleAction* a, GVariant* p, gpointer u) {
         spawn_process(argv_default);
     }
 }
-static void action_launch_server(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; OZ_WARN("Server launch not implemented"); }
+void action_launch_server(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; OZ_WARN("Server launch not implemented"); }
+*/
 
 // Dialog helpers
 static void dialog_set_entry(GtkDialog* dlg, const char* label, GtkWidget** out_entry, const char* initial) {
@@ -266,7 +137,7 @@ static void dialog_set_entry(GtkDialog* dlg, const char* label, GtkWidget** out_
     if (out_entry) *out_entry = ent;
 }
 
-static void action_bsp_box_dialog(GSimpleAction* a, GVariant* p, gpointer user_data) {
+void action_bsp_box_dialog(GSimpleAction* a, GVariant* p, gpointer user_data) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data;
     if (ui->last_box_w <= 0) { ui->last_box_w = 1.0f; ui->last_box_h = 1.0f; ui->last_box_d = 1.0f; }
     char wbuf[32], hbuf[32], dbuf[32];
@@ -292,7 +163,7 @@ static void action_bsp_box_dialog(GSimpleAction* a, GVariant* p, gpointer user_d
     gtk_widget_destroy(dlg);
 }
 
-static void action_bsp_cyl_dialog(GSimpleAction* a, GVariant* p, gpointer user_data) {
+void action_bsp_cyl_dialog(GSimpleAction* a, GVariant* p, gpointer user_data) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data;
     if (ui->last_cyl_rx <= 0) { ui->last_cyl_rx = 0.5f; ui->last_cyl_ry = 0.5f; ui->last_cyl_h = 1.0f; ui->last_cyl_seg = 16; }
     char rxbuf[32], rybuf[32], hbuf[32], sbuf[32];
@@ -322,7 +193,7 @@ static void action_bsp_cyl_dialog(GSimpleAction* a, GVariant* p, gpointer user_d
 }
 
 // Stubs for CSG/tools
-static void action_csg_add(GSimpleAction* a, GVariant* p, gpointer user_data) {
+void action_csg_add(GSimpleAction* a, GVariant* p, gpointer user_data) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data;
     if (!ui || ui->map.count < 2) { OZ_WARN("CSG Add requires at least 2 brushes"); return; }
     size_t i0 = (size_t)(ui->selected_index >= 0 ? ui->selected_index : 0);
@@ -337,7 +208,7 @@ static void action_csg_add(GSimpleAction* a, GVariant* p, gpointer user_data) {
     }
 }
 
-static void action_csg_sub(GSimpleAction* a, GVariant* p, gpointer user_data) {
+void action_csg_sub(GSimpleAction* a, GVariant* p, gpointer user_data) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data;
     if (!ui || ui->map.count < 2) { OZ_WARN("CSG Subtract requires at least 2 brushes"); return; }
     size_t i0 = (size_t)(ui->selected_index >= 0 ? ui->selected_index : 0);
@@ -352,7 +223,7 @@ static void action_csg_sub(GSimpleAction* a, GVariant* p, gpointer user_data) {
     }
 }
 
-static void action_csg_isect(GSimpleAction* a, GVariant* p, gpointer user_data) {
+void action_csg_isect(GSimpleAction* a, GVariant* p, gpointer user_data) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data;
     if (!ui || ui->map.count < 2) { OZ_WARN("CSG Intersect requires at least 2 brushes"); return; }
     size_t i0 = (size_t)(ui->selected_index >= 0 ? ui->selected_index : 0);
@@ -366,8 +237,8 @@ static void action_csg_isect(GSimpleAction* a, GVariant* p, gpointer user_data) 
         OZ_WARN("CSG Intersect produced no result");
     }
 }
-static void action_tool_carve(GSimpleAction* a, GVariant* p, gpointer u) { (void)a;(void)p;(void)u; OZ_INFO("Carve (stub)"); }
-static void action_tool_slope(GSimpleAction* a, GVariant* p, gpointer u) { (void)a;(void)p;(void)u; OZ_INFO("Slope (stub)"); }
+void action_tool_carve(GSimpleAction* a, GVariant* p, gpointer u) { (void)a;(void)p;(void)u; OZ_INFO("Carve (stub)"); }
+void action_tool_slope(GSimpleAction* a, GVariant* p, gpointer u) { (void)a;(void)p;(void)u; OZ_INFO("Slope (stub)"); }
 
 // Toolbar button shims (match GTK signal signature)
 static void toolbar_open_clicked(GtkToolButton* btn, gpointer user_data) { (void)btn; action_open(NULL, NULL, user_data); }
@@ -438,17 +309,7 @@ static void editor_project_point(EditorUi* ui, float x, float y, float z, float*
 static gboolean on_key_press(GtkWidget* w, GdkEventKey* e, gpointer user_data) {
     (void)w; EditorInputState* s = (EditorInputState*)user_data;
     guint k = e->keyval;
-    if (k >= 'a' && k <= 'z') {
-        s->keys[k] = TRUE;
-        s->keys[g_ascii_toupper((int)k)] = TRUE;
-    } else if (k < 256) {
-        s->keys[k] = TRUE;
-    } else {
-        // Map some special keys into our compact table
-        if (k == GDK_KEY_Left || k == GDK_KEY_Right || k == GDK_KEY_Up || k == GDK_KEY_Down) {
-            s->keys[k & 0xFF] = TRUE;
-        }
-    }
+    editor_input_handle_key(k, true, e->state);
     if (env_flag_is_true("OZ_DEBUG_INPUT")) {
         OZ_INFO("key down: %u '%c' state=%u", k, (k>=32 && k<127)?(int)k:'.', (unsigned) e->state);
     }
@@ -456,21 +317,9 @@ static gboolean on_key_press(GtkWidget* w, GdkEventKey* e, gpointer user_data) {
 }
 
 static gboolean on_key_release(GtkWidget* w, GdkEventKey* e, gpointer user_data) {
-    (void)w; EditorInputState* s = (EditorInputState*)user_data;
+    (void)w; (void)user_data;
     guint k = e->keyval;
-    if (k >= 'a' && k <= 'z') {
-        s->keys[k] = FALSE;
-        s->keys[g_ascii_toupper((int)k)] = FALSE;
-    } else if (k < 256) {
-        s->keys[k] = FALSE;
-    } else {
-        if (k == GDK_KEY_Left || k == GDK_KEY_Right || k == GDK_KEY_Up || k == GDK_KEY_Down) {
-            s->keys[k & 0xFF] = FALSE;
-        }
-    }
-    // Space and Ctrl need explicit clearing
-    if (k == GDK_KEY_space) s->keys[' '] = FALSE;
-    if (k == GDK_KEY_Control_L || k == GDK_KEY_Control_R) { s->keys['C'] = FALSE; s->keys['c'] = FALSE; }
+    editor_input_handle_key(k, false, e->state);
     if (env_flag_is_true("OZ_DEBUG_INPUT")) {
         OZ_INFO("key up: %u '%c' state=%u", k, (k>=32 && k<127)?(int)k:'.', (unsigned) e->state);
     }
@@ -640,6 +489,12 @@ static gboolean on_motion(GtkWidget* w, GdkEventMotion* e, gpointer user_data) {
     return TRUE;
 }
 
+static gboolean on_focus_out(GtkWidget* w, GdkEvent* e, gpointer user_data) {
+    (void)w; (void)e; (void)user_data;
+    editor_input_focus_clear_all();
+    return FALSE;
+}
+
 static gboolean tick_update(gpointer user_data) {
     EditorUi* ui = (EditorUi*)user_data;
     if (ui && ui->shutting_down) return FALSE; // stop timer cleanly
@@ -648,8 +503,8 @@ static gboolean tick_update(gpointer user_data) {
     float dt = (float)(now - g_editor_state->last_tick);
     if (dt < 0.0001f) dt = 0.0001f;
     g_editor_state->last_tick = now;
-    // Update using our editor key adapter
-    g_editor_state->last_inst_speed = oz_camera_update_freemove(&g_editor_state->cam, dt, editor_key_down);
+    // Update using shared editor input adapter
+    g_editor_state->last_inst_speed = oz_camera_update_freemove(&g_editor_state->cam, dt, editor_input_is_down_oz);
     // Here, just update fps and request redraw
     g_editor_state->fps = 1.0f / dt;
     if (env_flag_is_true("OZ_DEBUG_LOOP")) {
@@ -667,6 +522,7 @@ static gboolean tick_update(gpointer user_data) {
         gtk_label_set_text(GTK_LABEL(ui->info_label), buf);
     }
     if (ui && ui->viewport && GTK_IS_WIDGET(ui->viewport)) gtk_widget_queue_draw(ui->viewport);
+    editor_input_tick(now);
     return TRUE; // keep timer
 }
 
@@ -930,26 +786,30 @@ static gboolean gl_area_render(GtkGLArea* area, GdkGLContext* context, gpointer 
 }
 
 static void project_point(float x, float y, float z, int w, int h, float* out_x, float* out_y) {
-    // Fixed camera similar to GL view used above
-    float yaw = 0.0f;
-    float pitch = -15.0f * (float)G_PI / 180.0f;
-    float px = 0.0f, py = -5.0f, pz = -2.5f;
-    // Translate
+    // Use live editor camera to match GL viewport movement
+    float yaw = g_editor_state ? g_editor_state->cam.yaw : 0.0f;
+    float pitch = g_editor_state ? g_editor_state->cam.pitch : (-15.0f * (float)G_PI / 180.0f);
+    float px = g_editor_state ? g_editor_state->cam.position.x : 0.0f;
+    float py = g_editor_state ? g_editor_state->cam.position.y : -5.0f;
+    float pz = g_editor_state ? g_editor_state->cam.position.z : -2.5f;
+    // Translate by camera position (inverse)
     x -= px; y -= py; z -= pz;
-    // Rotate yaw around Z
-    float cy = cosf(yaw), sy = sinf(yaw);
+    // Rotate by inverse yaw (around Z)
+    float cy = cosf(-yaw), sy = sinf(-yaw);
     float x1 =  cy * x + sy * y;
     float y1 = -sy * x + cy * y;
     float z1 = z;
-    // Rotate pitch around X
-    float cp = cosf(pitch), sp = sinf(pitch);
+    // Rotate by inverse pitch (around X)
+    float cp = cosf(-pitch), sp = sinf(-pitch);
     float x2 = x1;
     float y2 = cp * y1 - sp * z1;
     float z2 = sp * y1 + cp * z1;
-    // Simple perspective
+    // Perspective projection (roughly match GL path)
     float f = 1.0f / tanf(60.0f * (float)G_PI / 360.0f);
-    float ndc_x = (x2 * f) / (z2 + 5.0f);
-    float ndc_y = (y2 * f) / (z2 + 5.0f);
+    float denom = (z2 + 5.0f);
+    if (denom < 0.05f) denom = 0.05f; // avoid extreme blow-up behind camera
+    float ndc_x = (x2 * f) / denom;
+    float ndc_y = (y2 * f) / denom;
     *out_x = (float)w * 0.5f + ndc_x * (float)w * 0.5f;
     *out_y = (float)h * 0.5f - ndc_y * (float)h * 0.5f;
 }
@@ -962,31 +822,7 @@ static gboolean fallback_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data
     int h = gtk_widget_get_allocated_height(widget);
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.12);
     cairo_paint(cr);
-    // Grid plane at z=0 for horizon reference
-    cairo_set_source_rgba(cr, 0.45, 0.48, 0.52, 0.6);
-    const float gridExtent = 20.0f;
-    const float gridStep = 1.0f;
-    for (float v = -gridExtent; v <= gridExtent + 0.001f; v += gridStep) {
-        float x0,y0,x1,y1;
-        // lines parallel to X axis (vary y)
-        project_point(-gridExtent, v, 0.0f, w,h,&x0,&y0);
-        project_point( gridExtent, v, 0.0f, w,h,&x1,&y1);
-        cairo_move_to(cr, x0, y0); cairo_line_to(cr, x1, y1);
-        // lines parallel to Y axis (vary x)
-        project_point(v, -gridExtent, 0.0f, w,h,&x0,&y0);
-        project_point(v,  gridExtent, 0.0f, w,h,&x1,&y1);
-        cairo_move_to(cr, x0, y0); cairo_line_to(cr, x1, y1);
-        cairo_stroke(cr);
-    }
-    // Axis highlight
-    cairo_set_source_rgba(cr, 0.7, 0.7, 0.8, 0.9);
-    float ax0,ay0,ax1,ay1;
-    project_point(-gridExtent, 0.0f, 0.0f, w,h,&ax0,&ay0);
-    project_point( gridExtent, 0.0f, 0.0f, w,h,&ax1,&ay1);
-    cairo_move_to(cr, ax0, ay0); cairo_line_to(cr, ax1, ay1); cairo_stroke(cr);
-    project_point(0.0f, -gridExtent, 0.0f, w,h,&ax0,&ay0);
-    project_point(0.0f,  gridExtent, 0.0f, w,h,&ax1,&ay1);
-    cairo_move_to(cr, ax0, ay0); cairo_line_to(cr, ax1, ay1); cairo_stroke(cr);
+    oz_render_soft_draw_grid_axes(cr, w, h, g_editor_state ? &g_editor_state->cam : NULL, TRUE, ui->dbg_show_axes);
     cairo_set_source_rgb(cr, 1, 1, 1);
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 12);
@@ -1012,55 +848,7 @@ static gboolean fallback_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data
         }
     }
 
-    // Draw brushes wireframe
-    cairo_set_source_rgb(cr, 0.9, 0.9, 0.95);
-    for (size_t i = 0; i < ui->map.count; ++i) {
-        const OzBrush* br = &ui->map.brushes[i];
-        if (br->type == OZ_BRUSH_BOX) {
-            const OzBrushBox* b = &br->as.box;
-            const float cx=b->center.x, cy=b->center.y, cz=b->center.z;
-            const float hx=b->half.x, hy=b->half.y, hz=b->half.z;
-            float v[8][3] = {
-                {cx - hx, cy - hy, cz - hz}, {cx + hx, cy - hy, cz - hz}, {cx + hx, cy + hy, cz - hz}, {cx - hx, cy + hy, cz - hz},
-                {cx - hx, cy - hy, cz + hz}, {cx + hx, cy - hy, cz + hz}, {cx + hx, cy + hy, cz + hz}, {cx - hx, cy + hy, cz + hz},
-            };
-            int edges[12][2] = { {0,1},{1,2},{2,3},{3,0}, {4,5},{5,6},{6,7},{7,4}, {0,4},{1,5},{2,6},{3,7} };
-            for (int e = 0; e < 12; ++e) {
-                float x0,y0,x1,y1;
-                project_point(v[edges[e][0]][0], v[edges[e][0]][1], v[edges[e][0]][2], w,h,&x0,&y0);
-                project_point(v[edges[e][1]][0], v[edges[e][1]][1], v[edges[e][1]][2], w,h,&x1,&y1);
-                cairo_move_to(cr, x0, y0);
-                cairo_line_to(cr, x1, y1);
-            }
-            cairo_stroke(cr);
-        } else if (br->type == OZ_BRUSH_CYLINDER) {
-            const OzBrushCylinder* c = &br->as.cyl;
-            int seg = c->segments > 3 ? c->segments : 16;
-            float hz = c->height * 0.5f;
-            // draw rings
-            for (int ring = -1; ring <= 1; ring += 2) {
-                float z = c->center.z + (ring < 0 ? -hz : hz);
-                cairo_new_path(cr);
-                for (int i2 = 0; i2 <= seg; ++i2) {
-                    float a = (float)(i2 % seg) / (float)seg * 6.2831853f;
-                    float x = c->center.x + cosf(a)*c->radius_x;
-                    float y = c->center.y + sinf(a)*c->radius_y;
-                    float sx, sy; project_point(x,y,z,w,h,&sx,&sy);
-                    if (i2==0) cairo_move_to(cr, sx, sy); else cairo_line_to(cr, sx, sy);
-                }
-                cairo_stroke(cr);
-            }
-            // verticals
-            for (int i = 0; i < seg; ++i) {
-                float a = (float)i / (float)seg * 6.2831853f;
-                float x = c->center.x + cosf(a)*c->radius_x;
-                float y = c->center.y + sinf(a)*c->radius_y;
-                float sx0,sy0,sx1,sy1; project_point(x,y,c->center.z-hz,w,h,&sx0,&sy0); project_point(x,y,c->center.z+hz,w,h,&sx1,&sy1);
-                cairo_move_to(cr, sx0, sy0); cairo_line_to(cr, sx1, sy1);
-                cairo_stroke(cr);
-            }
-        }
-    }
+    oz_render_soft_draw_map(cr, w, h, &ui->map, g_editor_state ? &g_editor_state->cam : NULL, ui->selected_index);
     // We handled drawing fully; stop further processing to avoid overdraw
     return TRUE;
 }
@@ -1081,6 +869,48 @@ static gboolean on_window_delete(GtkWidget* widget, GdkEvent* event, gpointer us
     return TRUE; // we destroy explicitly in action_quit
 }
 
+static void switch_to_software_viewport(GtkWidget* area_widget, EditorUi* ui) {
+    // Replace GLArea with software GtkDrawingArea and wire up redraws
+    GtkWidget* parent = gtk_widget_get_parent(GTK_WIDGET(area_widget));
+    GtkWidget* da = gtk_drawing_area_new();
+    gtk_widget_set_hexpand(da, TRUE);
+    gtk_widget_set_vexpand(da, TRUE);
+    gtk_widget_set_app_paintable(da, TRUE);
+    gtk_widget_set_size_request(da, 320, 200);
+    g_signal_connect(da, "draw", G_CALLBACK(fallback_draw), ui);
+    if (parent) gtk_container_remove(GTK_CONTAINER(parent), GTK_WIDGET(area_widget));
+    ui->gl_area = NULL;
+    ui->viewport = da;
+    // Rewire input on the new viewport
+    gtk_widget_add_events(ui->viewport,
+        GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK |
+        GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+        GDK_POINTER_MOTION_MASK);
+    gtk_widget_set_can_focus(ui->viewport, TRUE);
+    gtk_widget_grab_focus(ui->viewport);
+    g_object_set_data(G_OBJECT(ui->viewport), "oz_editor_ui", ui);
+    if (g_editor_state) {
+        g_signal_connect(ui->viewport, "key-press-event",   G_CALLBACK(on_key_press),    g_editor_state);
+        g_signal_connect(ui->viewport, "key-release-event", G_CALLBACK(on_key_release),  g_editor_state);
+        g_signal_connect(ui->viewport, "button-press-event", G_CALLBACK(on_button_press), g_editor_state);
+        g_signal_connect(ui->viewport, "button-release-event", G_CALLBACK(on_button_release), g_editor_state);
+        g_signal_connect(ui->viewport, "motion-notify-event", G_CALLBACK(on_motion), g_editor_state);
+    }
+    if (!ui->redraw_id) ui->redraw_id = g_timeout_add(16, queue_draw_cb, ui);
+    if (parent) gtk_box_pack_start(GTK_BOX(parent), da, TRUE, TRUE, 0);
+    if (ui->window) gtk_widget_show_all(ui->window);
+}
+
+typedef struct SwapCtx { GtkWidget* area; EditorUi* ui; } SwapCtx;
+static gboolean do_swap_to_software(gpointer data) {
+    SwapCtx* ctx = (SwapCtx*)data;
+    if (ctx && ctx->area && ctx->ui) {
+        switch_to_software_viewport(ctx->area, ctx->ui);
+    }
+    g_free(ctx);
+    return FALSE; // one-shot
+}
+
 static void gl_area_realize(GtkGLArea* area, gpointer user_data) {
     EditorUi* ui = (EditorUi*)user_data;
     // Trap potential X/GLX errors and fallback gracefully
@@ -1090,19 +920,7 @@ static void gl_area_realize(GtkGLArea* area, gpointer user_data) {
     if (xerr != 0 || gtk_gl_area_get_error(area)) {
         OZ_WARN("GLX/GDK error during GtkGLArea realize (code=%d). Falling back to software viewport.", xerr);
         // Fallback: replace GLArea within its current parent container
-        GtkWidget* parent = gtk_widget_get_parent(GTK_WIDGET(area));
-        GtkWidget* da = gtk_drawing_area_new();
-        gtk_widget_set_hexpand(da, TRUE);
-        gtk_widget_set_vexpand(da, TRUE);
-        gtk_widget_set_app_paintable(da, TRUE);
-        gtk_widget_set_size_request(da, 320, 200);
-        g_signal_connect(da, "draw", G_CALLBACK(fallback_draw), ui);
-        if (parent) gtk_container_remove(GTK_CONTAINER(parent), GTK_WIDGET(area));
-        ui->gl_area = NULL;
-        ui->viewport = da;
-        if (!ui->redraw_id) ui->redraw_id = g_timeout_add(16, queue_draw_cb, ui);
-        if (parent) gtk_box_pack_start(GTK_BOX(parent), da, TRUE, TRUE, 0);
-        if (ui->window) gtk_widget_show_all(ui->window);
+        switch_to_software_viewport(GTK_WIDGET(area), ui);
         return;
     }
     glEnable(GL_DEPTH_TEST);
@@ -1114,6 +932,24 @@ static void gl_area_realize(GtkGLArea* area, gpointer user_data) {
             vendor ? (const char*)vendor : "?",
             renderer ? (const char*)renderer : "?",
             version ? (const char*)version : "?");
+
+    // If GL version is < 3.2, GtkGLArea/GDK will not support required FBO path; fallback to software
+    int vmaj = 0, vmin = 0;
+    if (version) {
+        const char* vs = (const char*)version;
+        // Skip to first digit
+        while (*vs && !g_ascii_isdigit((gchar)*vs)) ++vs;
+        if (sscanf(vs, "%d.%d", &vmaj, &vmin) != 2) { vmaj = 0; vmin = 0; }
+    }
+    if (vmaj < 3 || (vmaj == 3 && vmin < 2)) {
+        OZ_WARN("OpenGL version %d.%d detected (< 3.2). Falling back to software viewport.", vmaj, vmin);
+        // Defer widget replacement to idle to avoid re-entrancy during realize
+        SwapCtx* ctx = g_new0(SwapCtx, 1);
+        ctx->area = GTK_WIDGET(area);
+        ctx->ui = ui;
+        g_idle_add(do_swap_to_software, ctx);
+        return;
+    }
 
     // Create a simple checker texture for brush visibility
     if (ui) {
@@ -1145,27 +981,7 @@ static void gl_area_realize(GtkGLArea* area, gpointer user_data) {
 
 // --- Menu wiring (split by domain) ---
 
-static void build_menu_file(GtkApplication* app, EditorUi* ui, GMenu* menubar) {
-    GMenu* file_menu = g_menu_new();
-    g_menu_append(file_menu, "Open",  "app.open");
-    g_menu_append(file_menu, "Save",  "app.save");
-    // Import submenu for assets
-    GMenu* import_menu = g_menu_new();
-    g_menu_append(import_menu, "Import Texture (.oztex)", "app.import_texture");
-    g_menu_append(import_menu, "Import Mesh Bundle (.ozbag)", "app.import_bundle");
-    g_menu_append(import_menu, "Import Music (.ozmux)", "app.import_music");
-    g_menu_append_submenu(file_menu, "Import", G_MENU_MODEL(import_menu));
-    GMenu* file_section_launch = g_menu_new();
-    g_menu_append(file_section_launch, "Launch Editor", "app.launch_editor");
-    g_menu_append(file_section_launch, "Launch Game",   "app.launch_game");
-    g_menu_append(file_section_launch, "Launch Server", "app.launch_server");
-    g_menu_append_section(file_menu, NULL, G_MENU_MODEL(file_section_launch));
-    g_menu_append(file_menu, "Quit",  "app.quit");
-    g_menu_append_submenu(menubar, "File", G_MENU_MODEL(file_menu));
-    g_object_unref(file_menu);
-    g_object_unref(import_menu);
-    g_object_unref(file_section_launch);
-}
+// removed: moved to src/editor/ui/ui.c
 
 // --- Object system helpers ---
 static void objects_reserve(EditorUi* ui, size_t cap) {
@@ -1247,135 +1063,21 @@ static void open_object_properties(EditorUi* ui, int index) {
     gtk_widget_show_all(win);
 }
 
-static void object_list_row_activated(GtkListBox* box, GtkListBoxRow* row, gpointer user_data) {
-    (void)box; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    int idx = gtk_list_box_row_get_index(row);
-    if (idx >= 0 && (size_t)idx < ui->obj_count) {
-        ui->selected_object = idx;
-        open_object_properties(ui, idx);
-    }
-}
+// moved to src/editor/ui/ui.c
 
-static void add_zone_clicked(GtkButton* b, gpointer user_data) {
-    (void)b; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    EditorObject o = {0}; o.type = OBJ_ZONE; o.as.zone.name = g_strdup("Zone"); o.as.zone.center[0]=0; o.as.zone.center[1]=0; o.as.zone.center[2]=0; o.as.zone.radius=5.0f;
-    int idx = objects_add(ui, &o); ui->selected_object = idx;
-    if (ui->viewport) gtk_widget_queue_draw(ui->viewport);
-}
-static void add_pickup_clicked(GtkButton* b, gpointer user_data) {
-    (void)b; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    EditorObject o = {0}; o.type = OBJ_PICKUP; o.as.pickup.name = g_strdup("Health"); o.as.pickup.position[0]=0; o.as.pickup.position[1]=0; o.as.pickup.position[2]=1.0f; o.as.pickup.respawn_seconds=30.0f;
-    int idx = objects_add(ui, &o); ui->selected_object = idx;
-    if (ui->viewport) gtk_widget_queue_draw(ui->viewport);
-}
-static void add_player_start_clicked(GtkButton* b, gpointer user_data) {
-    (void)b; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    EditorObject o = {0}; o.type = OBJ_PLAYER_START; o.as.pstart.position[0]=0; o.as.pstart.position[1]=0; o.as.pstart.position[2]=1.0f; o.as.pstart.yaw=0.0f; o.as.pstart.camera_mode=OZ_CAMERA_FREEMOVE;
-    int idx = objects_add(ui, &o); ui->selected_object = idx;
-    if (ui->viewport) gtk_widget_queue_draw(ui->viewport);
-}
+// moved to src/editor/ui/ui.c
 
 // Placement helpers: drop near camera
-static void place_near_camera(float pos[3]) {
-    if (!g_editor_state) { pos[0]=0; pos[1]=0; pos[2]=0; return; }
-    OzVec3 p = g_editor_state->cam.position;
-    float yaw = g_editor_state->cam.yaw;
-    float fx = cosf(yaw), fy = sinf(yaw);
-    pos[0] = p.x + fx * 2.0f;
-    pos[1] = p.y + fy * 2.0f;
-    pos[2] = p.z;
-}
+// moved to src/editor/ui/ui.c
 
-static void add_zone_template(GtkListBox* box, GtkListBoxRow* row, gpointer user_data) {
-    (void)box; (void)row; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    EditorObject o = {0}; o.type = OBJ_ZONE; o.as.zone.name = g_strdup("Zone"); o.as.zone.radius = 5.0f; place_near_camera(o.as.zone.center);
-    int idx = objects_add(ui, &o); ui->selected_object = idx; if (ui->obj_scene_list && GTK_IS_LIST_BOX(ui->obj_scene_list)) {
-        char buf[128]; snprintf(buf, sizeof(buf), "Zone #%d", idx);
-        gtk_list_box_insert(GTK_LIST_BOX(ui->obj_scene_list), gtk_label_new(buf), -1);
-        gtk_widget_show_all(ui->obj_scene_list);
-    }
-    if (ui->viewport) gtk_widget_queue_draw(ui->viewport);
-}
-static void add_pickup_template(GtkListBox* box, GtkListBoxRow* row, gpointer user_data) {
-    (void)box; (void)row; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    EditorObject o = {0}; o.type = OBJ_PICKUP; o.as.pickup.name = g_strdup("Health"); o.as.pickup.respawn_seconds = 30.0f; place_near_camera(o.as.pickup.position);
-    int idx = objects_add(ui, &o); ui->selected_object = idx; if (ui->obj_scene_list && GTK_IS_LIST_BOX(ui->obj_scene_list)) {
-        char buf[128]; snprintf(buf, sizeof(buf), "Pickup #%d", idx);
-        gtk_list_box_insert(GTK_LIST_BOX(ui->obj_scene_list), gtk_label_new(buf), -1);
-        gtk_widget_show_all(ui->obj_scene_list);
-    }
-    if (ui->viewport) gtk_widget_queue_draw(ui->viewport);
-}
-static void add_playerstart_template(GtkListBox* box, GtkListBoxRow* row, gpointer user_data) {
-    (void)box; (void)row; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    EditorObject o = {0}; o.type = OBJ_PLAYER_START; place_near_camera(o.as.pstart.position); o.as.pstart.yaw = g_editor_state? g_editor_state->cam.yaw : 0.0f; o.as.pstart.camera_mode = OZ_CAMERA_FPS;
-    int idx = objects_add(ui, &o); ui->selected_object = idx; if (ui->obj_scene_list && GTK_IS_LIST_BOX(ui->obj_scene_list)) {
-        char buf[128]; snprintf(buf, sizeof(buf), "PlayerStart #%d", idx);
-        gtk_list_box_insert(GTK_LIST_BOX(ui->obj_scene_list), gtk_label_new(buf), -1);
-        gtk_widget_show_all(ui->obj_scene_list);
-    }
-    if (ui->viewport) gtk_widget_queue_draw(ui->viewport);
-}
+// moved to src/editor/ui/ui.c
 
-static GtkWidget* build_template_list(const char** items, int count, GCallback on_activate, gpointer user_data) {
-    GtkWidget* list = gtk_list_box_new();
-    for (int i = 0; i < count; ++i) {
-        gtk_list_box_insert(GTK_LIST_BOX(list), gtk_label_new(items[i]), -1);
-    }
-    g_signal_connect(list, "row-activated", on_activate, user_data);
-    return list;
-}
+// moved to src/editor/ui/ui.c
 
-static void action_open_object_browser(GSimpleAction* a, GVariant* p, gpointer user_data) {
-    (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
-    if (ui->obj_browser_win && GTK_IS_WIDGET(ui->obj_browser_win)) { gtk_window_present(GTK_WINDOW(ui->obj_browser_win)); return; }
-    GtkWidget* win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(win), "Object Browser");
-    gtk_window_set_default_size(GTK_WINDOW(win), 520, 420);
-    GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-    gtk_container_add(GTK_CONTAINER(win), vbox);
-    GtkWidget* notebook = gtk_notebook_new();
-    gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
-    // Zones tab
-    const char* zones[] = { "Zone" };
-    GtkWidget* zones_list = build_template_list(zones, 1, G_CALLBACK(add_zone_template), ui);
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), zones_list, gtk_label_new("Zones"));
-    // Pickups tab
-    const char* picks[] = { "Health", "Ammo" };
-    GtkWidget* picks_list = build_template_list(picks, 2, G_CALLBACK(add_pickup_template), ui);
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), picks_list, gtk_label_new("Pickups"));
-    // Assets tab: show last imported asset paths (if any)
-    GtkWidget* assets_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 4);
-    if (ui->last_texture_path) gtk_box_pack_start(GTK_BOX(assets_box), gtk_label_new(ui->last_texture_path), FALSE, FALSE, 0);
-    if (ui->last_bundle_path)  gtk_box_pack_start(GTK_BOX(assets_box), gtk_label_new(ui->last_bundle_path), FALSE, FALSE, 0);
-    if (ui->last_music_path)   gtk_box_pack_start(GTK_BOX(assets_box), gtk_label_new(ui->last_music_path), FALSE, FALSE, 0);
-    if (!ui->last_texture_path && !ui->last_bundle_path && !ui->last_music_path) {
-        gtk_box_pack_start(GTK_BOX(assets_box), gtk_label_new("No assets imported yet. Use File → Import."), FALSE, FALSE, 0);
-    }
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), assets_box, gtk_label_new("Assets"));
-    // Nodes tab (Player Start)
-    const char* nodes[] = { "Player Start" };
-    GtkWidget* nodes_list = build_template_list(nodes, 1, G_CALLBACK(add_playerstart_template), ui);
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), nodes_list, gtk_label_new("Nodes"));
-    // Scene objects list at bottom
-    GtkWidget* scene_frame = gtk_frame_new("Scene Objects (double-click to edit)");
-    GtkWidget* scene_list = gtk_list_box_new();
-    for (size_t i = 0; i < ui->obj_count; ++i) {
-        const EditorObject* o = &ui->objects[i];
-        char buf[128]; const char* tp = (o->type==OBJ_ZONE?"Zone":(o->type==OBJ_PICKUP?"Pickup":"PlayerStart"));
-        snprintf(buf, sizeof(buf), "%s #%zu", tp, i);
-        gtk_list_box_insert(GTK_LIST_BOX(scene_list), gtk_label_new(buf), -1);
-    }
-    g_signal_connect(scene_list, "row-activated", G_CALLBACK(object_list_row_activated), ui);
-    gtk_container_add(GTK_CONTAINER(scene_frame), scene_list);
-    gtk_box_pack_start(GTK_BOX(vbox), scene_frame, FALSE, FALSE, 0);
-    gtk_widget_show_all(win);
-    ui->obj_browser_win = win;
-    ui->obj_scene_list = scene_list;
-}
+// moved to src/editor/ui/ui.c
 
 // Shim to open object browser from a GtkButton clicked
-static void open_object_browser_clicked(GtkButton* b, gpointer user_data) { (void)b; action_open_object_browser(NULL, NULL, user_data); }
+// moved to src/editor/ui/ui.c
 
 static void build_menu_bsp(GtkApplication* app, EditorUi* ui, GMenu* menubar) {
     (void)app; (void)ui;
@@ -1403,256 +1105,19 @@ static void build_menu_bsp(GtkApplication* app, EditorUi* ui, GMenu* menubar) {
     g_object_unref(bsp_section_tools);
 }
 
-static void build_menu_light(GtkApplication* app, EditorUi* ui, GMenu* menubar) {
-    (void)app; (void)ui;
-    GMenu* light_menu = g_menu_new();
-    g_menu_append(light_menu, "Build Light", "app.build_light");
-    g_menu_append_submenu(menubar, "Light", G_MENU_MODEL(light_menu));
-    g_object_unref(light_menu);
-}
+// moved to src/editor/ui/ui.c
 
-static void action_view_grab_focus(GSimpleAction* a, GVariant* p, gpointer user_data) {
-    (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data;
-    if (ui && ui->viewport) {
-        gtk_widget_set_can_focus(ui->viewport, TRUE);
-        gtk_widget_grab_focus(ui->viewport);
-        OZ_INFO("Viewport focus grabbed");
-    }
-}
+// moved to src/editor/ui/ui.c
 
-static void action_gizmo_translate(GSimpleAction* a, GVariant* p, gpointer user_data) { (void)a; (void)p; EditorUi* ui=(EditorUi*)user_data; ui->gizmo_translate=TRUE; ui->gizmo_rotate=FALSE; ui->gizmo_scale=FALSE; }
-static void action_gizmo_rotate(GSimpleAction* a, GVariant* p, gpointer user_data)    { (void)a; (void)p; EditorUi* ui=(EditorUi*)user_data; ui->gizmo_translate=FALSE; ui->gizmo_rotate=TRUE; ui->gizmo_scale=FALSE; }
-static void action_gizmo_scale(GSimpleAction* a, GVariant* p, gpointer user_data)     { (void)a; (void)p; EditorUi* ui=(EditorUi*)user_data; ui->gizmo_translate=FALSE; ui->gizmo_rotate=FALSE; ui->gizmo_scale=TRUE; }
+// moved to src/editor/ui/ui.c
 
-static void build_menu_view(GtkApplication* app, EditorUi* ui, GMenu* menubar) {
-    (void)app; (void)ui;
-    GMenu* view_menu = g_menu_new();
-    g_menu_append(view_menu, "Grab Focus", "app.view_grab_focus");
-    g_menu_append(view_menu, "Gizmo: Translate", "app.gizmo_translate");
-    g_menu_append(view_menu, "Gizmo: Rotate", "app.gizmo_rotate");
-    g_menu_append(view_menu, "Gizmo: Scale", "app.gizmo_scale");
-    g_menu_append(view_menu, "Toggle Axes", "app.debug_toggle_axes");
-    g_menu_append(view_menu, "Object Browser...", "app.open_object_browser");
-    g_menu_append_submenu(menubar, "View", G_MENU_MODEL(view_menu));
-    g_object_unref(view_menu);
-}
+// moved to src/editor/ui/ui.c
 
-// --- Debug actions ---
-static void action_debug_toggle_grid(GSimpleAction* a, GVariant* p, gpointer user_data) { (void)a; (void)p; EditorUi* ui=(EditorUi*)user_data; ui->dbg_show_grid = !ui->dbg_show_grid; if (ui->viewport) gtk_widget_queue_draw(ui->viewport); }
-static void action_debug_toggle_axes(GSimpleAction* a, GVariant* p, gpointer user_data) { (void)a; (void)p; EditorUi* ui=(EditorUi*)user_data; ui->dbg_show_axes = !ui->dbg_show_axes; if (ui->viewport) gtk_widget_queue_draw(ui->viewport); }
-static void action_debug_toggle_fps(GSimpleAction* a, GVariant* p, gpointer user_data) { (void)a; (void)p; EditorUi* ui=(EditorUi*)user_data; ui->dbg_show_fps = !ui->dbg_show_fps; if (!ui->dbg_show_fps) gtk_label_set_text(GTK_LABEL(ui->info_label), ""); }
+// moved to src/editor/ui/ui.c
 
-// Simple log window that receives oz_log sink lines
-typedef struct LogWindowCtx { GtkWidget* win; GtkWidget* view; GtkTextBuffer* buf; } LogWindowCtx;
-static LogWindowCtx* g_log_ctx = NULL;
+// moved to src/editor/ui/ui.c
 
-static void log_sink_bridge(OzLogLevel level, const char* line) {
-    (void)level; if (!g_log_ctx || !g_log_ctx->buf) return;
-    GtkTextIter end; gtk_text_buffer_get_end_iter(g_log_ctx->buf, &end);
-    gtk_text_buffer_insert(g_log_ctx->buf, &end, line, -1);
-    gtk_text_buffer_insert(g_log_ctx->buf, &end, "\n", -1);
-}
-
-static void action_debug_open_log(GSimpleAction* a, GVariant* p, gpointer user_data) {
-    (void)a; (void)p; (void)user_data;
-    if (g_log_ctx && g_log_ctx->win) { gtk_window_present(GTK_WINDOW(g_log_ctx->win)); return; }
-    g_log_ctx = g_new0(LogWindowCtx, 1);
-    g_log_ctx->win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(g_log_ctx->win), "Log");
-    gtk_window_set_default_size(GTK_WINDOW(g_log_ctx->win), 520, 320);
-    GtkWidget* scrolled = gtk_scrolled_window_new(NULL, NULL);
-    gtk_container_add(GTK_CONTAINER(g_log_ctx->win), scrolled);
-    g_log_ctx->view = gtk_text_view_new();
-    gtk_text_view_set_editable(GTK_TEXT_VIEW(g_log_ctx->view), FALSE);
-    gtk_container_add(GTK_CONTAINER(scrolled), g_log_ctx->view);
-    g_log_ctx->buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(g_log_ctx->view));
-    gtk_widget_show_all(g_log_ctx->win);
-    oz_log_set_sink(log_sink_bridge, true);
-}
-
-// Debug window: memory usage + backtrace (UNIX)
-#ifndef _WIN32
-#include <execinfo.h>
-#include <sys/resource.h>
-#include <link.h>
-#endif
-#include "oz/oz_debug.h"
-#include <stdint.h>
-#include <stdio.h>
-
-static gchar* get_memory_info_string(void) {
-#ifndef _WIN32
-    struct rusage ru; getrusage(RUSAGE_SELF, &ru);
-    gchar* s = g_strdup_printf("RSS: %ld KB  MinorFaults: %ld  MajorFaults: %ld",
-                               (long)ru.ru_maxrss, (long)ru.ru_minflt, (long)ru.ru_majflt);
-    return s;
-#else
-    return g_strdup("Memory info not available on this platform");
-#endif
-}
-
-static void fill_stack_trace(GtkTextBuffer* buf) {
-#ifndef _WIN32
-    void* addrs[64]; int n = backtrace(addrs, 64);
-    char** syms = backtrace_symbols(addrs, n);
-    GtkTextIter end; gtk_text_buffer_get_end_iter(buf, &end);
-    gtk_text_buffer_insert(buf, &end, "Stack trace:\n", -1);
-    for (int i = 0; i < n; ++i) { gtk_text_buffer_insert(buf, &end, syms[i], -1); gtk_text_buffer_insert(buf, &end, "\n", -1); }
-    free(syms);
-#else
-    (void)buf;
-#endif
-}
-
-static void action_debug_open_debug(GSimpleAction* a, GVariant* p, gpointer user_data) {
-    (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data;
-    if (ui->debug_window && GTK_IS_WIDGET(ui->debug_window)) { gtk_window_present(GTK_WINDOW(ui->debug_window)); return; }
-    GtkWidget* win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_title(GTK_WINDOW(win), "Debug Info");
-    gtk_window_set_default_size(GTK_WINDOW(win), 560, 380);
-    GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 6);
-    gtk_container_add(GTK_CONTAINER(win), vbox);
-    // Memory label
-    gchar* mem = get_memory_info_string();
-    GtkWidget* mem_label = gtk_label_new(mem); g_free(mem);
-    gtk_box_pack_start(GTK_BOX(vbox), mem_label, FALSE, FALSE, 0);
-    // Watch table
-    GtkWidget* watch_sc = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), watch_sc, TRUE, TRUE, 0);
-    GtkWidget* watch_tv = gtk_text_view_new(); gtk_text_view_set_editable(GTK_TEXT_VIEW(watch_tv), FALSE); gtk_container_add(GTK_CONTAINER(watch_sc), watch_tv);
-    GtkTextBuffer* watch_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(watch_tv));
-    GtkTextIter wend; gtk_text_buffer_get_end_iter(watch_buf, &wend);
-    gtk_text_buffer_insert(watch_buf, &wend, "Watches:\n", -1);
-    for (size_t i = 0; i < oz_debug_watch_count(); ++i) {
-        const char* nm = oz_debug_watch_name(i);
-        OzDebugType tp = oz_debug_watch_type(i);
-        const void* addr = oz_debug_watch_address(i);
-        gchar line[256];
-        switch (tp) {
-            case OZ_DEBUG_T_I32: snprintf(line, sizeof(line), "%s = %d\n", nm, *(const int*)addr); break;
-            case OZ_DEBUG_T_U32: snprintf(line, sizeof(line), "%s = %u\n", nm, *(const unsigned*)addr); break;
-            case OZ_DEBUG_T_F32: snprintf(line, sizeof(line), "%s = %.3f\n", nm, *(const float*)addr); break;
-            case OZ_DEBUG_T_F64: snprintf(line, sizeof(line), "%s = %.3f\n", nm, *(const double*)addr); break;
-            default: snprintf(line, sizeof(line), "%s @ %p\n", nm, addr); break;
-        }
-        gtk_text_buffer_insert(watch_buf, &wend, line, -1);
-    }
-
-    // Stack trace view
-    GtkWidget* sc = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), sc, TRUE, TRUE, 0);
-    GtkWidget* tv = gtk_text_view_new(); gtk_text_view_set_editable(GTK_TEXT_VIEW(tv), FALSE); gtk_container_add(GTK_CONTAINER(sc), tv);
-    GtkTextBuffer* buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(tv));
-    fill_stack_trace(buf);
-
-    // Disassembly around current frame (Unix)
-    GtkWidget* asm_sc = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), asm_sc, TRUE, TRUE, 0);
-    GtkWidget* asm_tv = gtk_text_view_new(); gtk_text_view_set_editable(GTK_TEXT_VIEW(asm_tv), FALSE); gtk_container_add(GTK_CONTAINER(asm_sc), asm_tv);
-    GtkTextBuffer* asm_buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(asm_tv));
-    GtkTextIter aend; gtk_text_buffer_get_end_iter(asm_buf, &aend);
-#ifndef _WIN32
-    void* addrs[64]; int n = backtrace(addrs, 64);
-    if (n >= 2) {
-        uintptr_t addr = (uintptr_t)addrs[1];
-        uintptr_t start = addr > 64 ? addr - 64 : addr;
-        uintptr_t stop  = addr + 128;
-        char cmd[1024];
-        snprintf(cmd, sizeof(cmd), "sh -lc 'objdump -d --no-show-raw-insn --start-address=0x%lx --stop-address=0x%lx /proc/self/exe 2>/dev/null || llvm-objdump -d --no-show-raw-insn --start-address=0x%lx --stop-address=0x%lx /proc/self/exe 2>/dev/null'",
-                 (unsigned long)start, (unsigned long)stop, (unsigned long)start, (unsigned long)stop);
-        FILE* fp = popen(cmd, "r");
-        if (fp) {
-            char line[512];
-            while (fgets(line, sizeof(line), fp)) {
-                gtk_text_buffer_insert(asm_buf, &aend, line, -1);
-            }
-            pclose(fp);
-        } else {
-            gtk_text_buffer_insert(asm_buf, &aend, "Failed to run objdump/llvm-objdump.\n", -1);
-        }
-    } else {
-        gtk_text_buffer_insert(asm_buf, &aend, "No stack frames available for disassembly.\n", -1);
-    }
-#else
-    gtk_text_buffer_insert(asm_buf, &aend, "Disassembly not available on this platform.\n", -1);
-#endif
-    gtk_widget_show_all(win);
-    ui->debug_window = win;
-}
-
-// Demo JIT: compiles a simple function and calls it
-static void action_debug_jit_example(GSimpleAction* a, GVariant* p, gpointer user_data) {
-    (void)a; (void)p; (void)user_data;
-    const char* src = "#include <stdio.h>\n" \
-        "int ozjit_add(int a,int b){return a+b;}\n";
-    void* h = NULL;
-    if (!oz_jit_compile_and_load("ozjit_tmp", src, "-O2 -fPIC", &h)) { OZ_ERROR("JIT compile failed"); return; }
-    typedef int (*AddFn)(int,int);
-    AddFn fn = (AddFn)oz_jit_get_symbol(h, "ozjit_add");
-    if (!fn) { OZ_ERROR("JIT: symbol not found"); oz_jit_unload(h); return; }
-    int r = fn(40, 2);
-    OZ_INFO("JIT result ozjit_add(40,2)=%d", r);
-    oz_jit_unload(h);
-}
-
-static void populate_menus(GtkApplication* app, EditorUi* ui) {
-    (void)ui;
-    // Actions
-    const GActionEntry entries[] = {
-        { "open",  action_open,  NULL, NULL, NULL },
-        { "save",  action_save,  NULL, NULL, NULL },
-        { "import_texture", on_import_texture, NULL, NULL, NULL },
-        { "import_bundle",  on_import_bundle,  NULL, NULL, NULL },
-        { "import_music",   on_import_music,   NULL, NULL, NULL },
-        { "view_grab_focus", action_view_grab_focus, NULL, NULL, NULL },
-        { "build_map",     action_build_map,     NULL, NULL, NULL },
-        { "build_light",   action_build_light,   NULL, NULL, NULL },
-        { "build_bsp",     action_build_bsp,     NULL, NULL, NULL },
-        { "build_brushes", action_build_brushes, NULL, NULL, NULL },
-        { "bsp_box_dialog", action_bsp_box_dialog, NULL, NULL, NULL },
-        { "bsp_cyl_dialog", action_bsp_cyl_dialog, NULL, NULL, NULL },
-        { "csg_add", action_csg_add, NULL, NULL, NULL },
-        { "csg_sub", action_csg_sub, NULL, NULL, NULL },
-        { "csg_isect", action_csg_isect, NULL, NULL, NULL },
-        { "tool_carve", action_tool_carve, NULL, NULL, NULL },
-        { "tool_slope", action_tool_slope, NULL, NULL, NULL },
-        { "launch_editor", action_launch_editor, NULL, NULL, NULL },
-        { "launch_game",   action_launch_game,   NULL, NULL, NULL },
-        { "launch_server", action_launch_server, NULL, NULL, NULL },
-        { "gizmo_translate", action_gizmo_translate, NULL, NULL, NULL },
-        { "gizmo_rotate", action_gizmo_rotate, NULL, NULL, NULL },
-        { "gizmo_scale", action_gizmo_scale, NULL, NULL, NULL },
-        { "debug_toggle_grid", action_debug_toggle_grid, NULL, NULL, NULL },
-        { "debug_toggle_axes", action_debug_toggle_axes, NULL, NULL, NULL },
-        { "debug_toggle_fps", action_debug_toggle_fps, NULL, NULL, NULL },
-        { "debug_open_log", action_debug_open_log, NULL, NULL, NULL },
-        { "debug_open_debug", action_debug_open_debug, NULL, NULL, NULL },
-        { "debug_jit_example", action_debug_jit_example, NULL, NULL, NULL },
-        { "open_object_browser", action_open_object_browser, NULL, NULL, NULL },
-        { "quit",  action_quit,  NULL, NULL, NULL },
-    };
-    g_action_map_add_action_entries(G_ACTION_MAP(app), entries, G_N_ELEMENTS(entries), ui);
-
-    // Menu model
-    GMenu* menubar = g_menu_new();
-    build_menu_file(app, ui, menubar);
-    build_menu_view(app, ui, menubar);
-    // BSP menu replaced by left-side buttons in the viewport
-    build_menu_light(app, ui, menubar);
-    // Debug menu
-    GMenu* debug_menu = g_menu_new();
-    g_menu_append(debug_menu, "Toggle Grid",  "app.debug_toggle_grid");
-    g_menu_append(debug_menu, "Toggle Axes",  "app.debug_toggle_axes");
-    g_menu_append(debug_menu, "Toggle FPS HUD",  "app.debug_toggle_fps");
-    g_menu_append(debug_menu, "Open Log Window", "app.debug_open_log");
-    g_menu_append(debug_menu, "Open Debug Window", "app.debug_open_debug");
-    g_menu_append(debug_menu, "JIT: Compile+Run Example", "app.debug_jit_example");
-    g_menu_append_submenu(menubar, "Debug", G_MENU_MODEL(debug_menu));
-    g_object_unref(debug_menu);
-    gtk_application_set_menubar(app, G_MENU_MODEL(menubar));
-
-    g_object_unref(menubar);
-}
+// moved to src/editor/ui/ui.c: populate menus and actions
 
 // --- Left-side BSP creation buttons ---
 static void select_last_and_invalidate(EditorUi* ui) {
@@ -1690,11 +1155,11 @@ static void maybe_show_splash(void) {
     g_timeout_add(1200, destroy_widget_cb, splash);
 }
 
-static void on_activate(GtkApplication* app, gpointer user_data) {
+void on_activate(GtkApplication* app, gpointer user_data) {
     (void)user_data;
     EditorUi* ui = g_new0(EditorUi, 1);
 
-    populate_menus(app, ui);
+    editor_ui_populate_menus(app, ui);
 
     // Show splash while we build the main window
     maybe_show_splash();
@@ -1706,16 +1171,8 @@ static void on_activate(GtkApplication* app, gpointer user_data) {
     ui->vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(ui->window), ui->vbox);
 
-    // Menu bar from app menubar will be shown by shell; also add a simple toolbar placeholder
-    ui->toolbar = gtk_toolbar_new();
-    GtkToolItem* open_btn = gtk_tool_button_new(NULL, "Open");
-    g_signal_connect(open_btn, "clicked", G_CALLBACK(toolbar_open_clicked), ui);
-    gtk_toolbar_insert(GTK_TOOLBAR(ui->toolbar), open_btn, -1);
-
-    GtkToolItem* save_btn = gtk_tool_button_new(NULL, "Save");
-    g_signal_connect(save_btn, "clicked", G_CALLBACK(toolbar_save_clicked), ui);
-    gtk_toolbar_insert(GTK_TOOLBAR(ui->toolbar), save_btn, -1);
-
+    // Add toolbar from UI module
+    ui->toolbar = editor_ui_build_toolbar(ui);
     gtk_box_pack_start(GTK_BOX(ui->vbox), ui->toolbar, FALSE, FALSE, 0);
 
     // Initialize input state before wiring events and rendering
@@ -1748,7 +1205,8 @@ static void on_activate(GtkApplication* app, gpointer user_data) {
     g_signal_connect(btn_sph,  "clicked", G_CALLBACK(btn_add_sphere), ui);
     g_signal_connect(btn_pyr,  "clicked", G_CALLBACK(btn_add_pyramid), ui);
     g_signal_connect(btn_pln,  "clicked", G_CALLBACK(btn_add_plane), ui);
-    g_signal_connect(btn_obj,  "clicked", G_CALLBACK(open_object_browser_clicked), ui);
+    extern void action_open_object_browser(GSimpleAction*, GVariant*, gpointer);
+    g_signal_connect(btn_obj,  "clicked", G_CALLBACK(action_open_object_browser), ui);
     gtk_box_pack_start(GTK_BOX(left), btn_cube, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(left), btn_cyl,  FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(left), btn_sph,  FALSE, FALSE, 0);
@@ -1760,9 +1218,16 @@ static void on_activate(GtkApplication* app, gpointer user_data) {
     // Viewport: prefer GL when available and enabled; otherwise software DrawingArea
     const char* gdkgl_env = g_getenv("GDK_GL");
     const gboolean gl_disabled = (gdkgl_env && g_strcmp0(gdkgl_env, "disable") == 0);
-    if (!gl_disabled) {
+    const char* disp_env = g_getenv("DISPLAY");
+    const gboolean is_remote = (disp_env && disp_env[0] != ':');
+    const gboolean allow_gl_remote = env_flag_is_true("OZ_ALLOW_GL_REMOTE");
+    const gboolean libgl_indirect = (g_getenv("LIBGL_ALWAYS_INDIRECT") != NULL);
+    const gboolean force_software = gl_disabled || env_flag_is_true("OZ_FORCE_SOFTWARE") || libgl_indirect || (is_remote && !allow_gl_remote);
+
+    if (!force_software) {
         GtkWidget* gl = gtk_gl_area_new();
-        gtk_gl_area_set_required_version(GTK_GL_AREA(gl), 2, 1);
+        // Require a modern context so GtkGLArea creation fails early on legacy/indirect drivers
+        gtk_gl_area_set_required_version(GTK_GL_AREA(gl), 3, 2);
         gtk_gl_area_set_use_es(GTK_GL_AREA(gl), FALSE);
         gtk_gl_area_set_has_depth_buffer(GTK_GL_AREA(gl), TRUE);
         gtk_gl_area_set_has_alpha(GTK_GL_AREA(gl), FALSE);
@@ -1771,23 +1236,21 @@ static void on_activate(GtkApplication* app, gpointer user_data) {
         g_signal_connect(gl, "realize", G_CALLBACK(gl_area_realize), ui);
         gtk_widget_set_hexpand(gl, TRUE);
         gtk_widget_set_vexpand(gl, TRUE);
-        // Defer attaching to layout until after we try to make current once
-        gtk_widget_realize(gl);
-        gdk_error_trap_push();
-        gtk_gl_area_make_current(GTK_GL_AREA(gl));
-        int xerr = gdk_error_trap_pop();
-        if (xerr == 0 && gtk_gl_area_get_error(GTK_GL_AREA(gl)) == NULL) {
-            ui->gl_area = gl;
-            ui->viewport = gl;
-            gtk_box_pack_start(GTK_BOX(content), gl, TRUE, TRUE, 0);
-            OZ_INFO("Using GtkGLArea viewport");
-        } else {
-            OZ_WARN("GLX/GDK error before attach (code=%d). Using software viewport.", xerr);
-        }
+        // Attach GLArea to layout; realization will happen on show and may fallback if needed
+        ui->gl_area = gl;
+        ui->viewport = gl;
+        gtk_box_pack_start(GTK_BOX(content), gl, TRUE, TRUE, 0);
+        OZ_INFO("Using GtkGLArea viewport");
     }
     if (!ui->viewport) {
         GtkWidget* da = gtk_drawing_area_new();
-        OZ_INFO("Using software viewport (GtkDrawingArea)");
+        if (libgl_indirect || (is_remote && !allow_gl_remote)) {
+            OZ_INFO("Using software viewport (GtkDrawingArea) due to indirect/remote GL");
+        } else if (gl_disabled || env_flag_is_true("OZ_FORCE_SOFTWARE")) {
+            OZ_INFO("Using software viewport (GtkDrawingArea) due to config");
+        } else {
+            OZ_INFO("Using software viewport (GtkDrawingArea)");
+        }
         gtk_widget_set_hexpand(da, TRUE);
         gtk_widget_set_vexpand(da, TRUE);
         gtk_widget_set_app_paintable(da, TRUE);
@@ -1813,11 +1276,11 @@ static void on_activate(GtkApplication* app, gpointer user_data) {
     gtk_widget_set_valign(ui->info_label, GTK_ALIGN_START);
     gtk_box_pack_start(GTK_BOX(ui->vbox), ui->info_label, FALSE, FALSE, 0);
     // Input + timer
-    gtk_widget_add_events(ui->window, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK);
+    gtk_widget_add_events(ui->window, GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK | GDK_FOCUS_CHANGE_MASK);
     gtk_widget_add_events(ui->viewport,
         GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK |
         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-        GDK_POINTER_MOTION_MASK);
+        GDK_POINTER_MOTION_MASK | GDK_FOCUS_CHANGE_MASK);
     // Route key/mouse to viewport; also connect at window level as a fallback
     GtkWidget* key_target = ui->viewport ? ui->viewport : ui->window;
     gtk_widget_set_can_focus(key_target, TRUE);
@@ -1829,29 +1292,15 @@ static void on_activate(GtkApplication* app, gpointer user_data) {
     g_signal_connect(key_target, "button-press-event", G_CALLBACK(on_button_press), &state);
     g_signal_connect(key_target, "button-release-event", G_CALLBACK(on_button_release), &state);
     g_signal_connect(key_target, "motion-notify-event", G_CALLBACK(on_motion), &state);
+    g_signal_connect(key_target, "focus-out-event", G_CALLBACK(on_focus_out), &state);
     // Redundant connections on window to ensure focus loss doesn't break movement
     g_object_set_data(G_OBJECT(ui->window), "oz_editor_ui", ui);
     g_signal_connect(ui->window, "key-press-event", G_CALLBACK(on_key_press), &state);
     g_signal_connect(ui->window, "key-release-event", G_CALLBACK(on_key_release), &state);
+    g_signal_connect(ui->window, "focus-out-event", G_CALLBACK(on_focus_out), &state);
     ui->tick_id = g_timeout_add(16, tick_update, ui);
     g_signal_connect(ui->window, "delete-event", G_CALLBACK(on_window_delete), ui);
     gtk_widget_show_all(ui->window);
 }
 
-int main(int argc, char** argv) {
-    OZ_INFO("OzWorld Editor starting (v%s)", oz_core_version());
-    // Log environment diagnostics for GL/GTK troubleshooting
-    const char* disp = g_getenv("DISPLAY");
-    const char* libgl = g_getenv("LIBGL_ALWAYS_INDIRECT");
-    const char* gdkgl = g_getenv("GDK_GL");
-    OZ_INFO("DISPLAY=%s", disp ? disp : "(null)");
-    OZ_INFO("LIBGL_ALWAYS_INDIRECT=%s", libgl ? libgl : "(null)");
-    OZ_INFO("GDK_GL=%s", gdkgl ? gdkgl : "(null)");
-    // Prefer OpenGL path always. To disable GL explicitly, export GDK_GL=disable before running.
-    GtkApplication* app = gtk_application_new("com.ozworld.editor", G_APPLICATION_FLAGS_NONE);
-    g_app_singleton = app;
-    g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);
-    int status = g_application_run(G_APPLICATION(app), argc, argv);
-    g_object_unref(app);
-    return status;
-}
+// main is now in src/editor/app.c
