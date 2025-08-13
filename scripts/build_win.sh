@@ -11,13 +11,19 @@ set -euo pipefail
 BUILD_TYPE=RelWithDebInfo
 BUILD_DIR=build-win
 CLEAN=0
+WITH_AUDIO=ON
+BUILD_EDITOR=ON
+BUILD_DEMO=ON
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --debug) BUILD_TYPE=Debug; shift ;;
     --clean) CLEAN=1; shift ;;
     --build-dir) BUILD_DIR="$2"; shift 2 ;;
-    *) echo "Unknown arg: $1"; echo "Usage: $0 [--debug] [--clean] [--build-dir DIR]"; exit 1 ;;
+    --no-audio) WITH_AUDIO=OFF; shift ;;
+    --no-editor) BUILD_EDITOR=OFF; shift ;;
+    --no-demo) BUILD_DEMO=OFF; shift ;;
+    *) echo "Unknown arg: $1"; echo "Usage: $0 [--debug] [--clean] [--build-dir DIR] [--no-audio] [--no-editor] [--no-demo]"; exit 1 ;;
   esac
 done
 
@@ -40,7 +46,10 @@ fi
 
 cmake -S . -B "$BUILD_DIR" \
   -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-w64.cmake \
-  -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+  -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+  -DOZ_WITH_AUDIO="$WITH_AUDIO" \
+  -DOZ_BUILD_EDITOR="$BUILD_EDITOR" \
+  -DOZ_BUILD_DEMO="$BUILD_DEMO"
 
 cmake --build "$BUILD_DIR" -j
 
