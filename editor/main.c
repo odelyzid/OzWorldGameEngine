@@ -1847,26 +1847,7 @@ int main(int argc, char** argv) {
     OZ_INFO("DISPLAY=%s", disp ? disp : "(null)");
     OZ_INFO("LIBGL_ALWAYS_INDIRECT=%s", libgl ? libgl : "(null)");
     OZ_INFO("GDK_GL=%s", gdkgl ? gdkgl : "(null)");
-    // Harden against GLX BadRequest on remote X servers (e.g., VcXsrv restarts):
-    // Default to software rendering on remote DISPLAYs unless explicitly allowed.
-    const gboolean is_remote_display = (disp && disp[0] != ':');
-    const gboolean allow_gl_remote = env_flag_is_true("OZ_ALLOW_GL_REMOTE");
-    if (is_remote_display) {
-        OZ_WARN("Remote DISPLAY detected (%s).", disp);
-        // Prefer indirect GL if present; otherwise disable GDK GL entirely to avoid GLX crashes.
-        if (!allow_gl_remote) {
-            if (!gdkgl || g_strcmp0(gdkgl, "disable") != 0) {
-                g_setenv("GDK_GL", "disable", TRUE);
-                OZ_WARN("Forcing GDK_GL=disable for stability on remote X. Set OZ_ALLOW_GL_REMOTE=1 to override.");
-                gdkgl = g_getenv("GDK_GL");
-            }
-            if (!libgl || libgl[0] == '\0') {
-                g_setenv("LIBGL_ALWAYS_INDIRECT", "1", FALSE);
-                libgl = g_getenv("LIBGL_ALWAYS_INDIRECT");
-            }
-        }
-    }
-    OZ_INFO("Effective GDK_GL=%s", gdkgl ? gdkgl : "(null)");
+    // Prefer OpenGL path always. To disable GL explicitly, export GDK_GL=disable before running.
     GtkApplication* app = gtk_application_new("com.ozworld.editor", G_APPLICATION_FLAGS_NONE);
     g_app_singleton = app;
     g_signal_connect(app, "activate", G_CALLBACK(on_activate), NULL);

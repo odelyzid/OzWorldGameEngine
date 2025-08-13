@@ -12,39 +12,94 @@
 static SDL_Window* s_window = NULL;
 static SDL_GLContext s_gl = NULL;
 static Uint8 s_keys[SDL_NUM_SCANCODES];
+static bool s_software_renderer = false;
 
 bool oz_platform_init(const struct OzWindowConfig* config) {
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+    // Early environment diagnostics for display/GL issues
+    const char* disp = getenv("DISPLAY");
+    const char* libgl_ind = getenv("LIBGL_ALWAYS_INDIRECT");
+    const char* libgl_dbg = getenv("LIBGL_DEBUG");
+    const char* mesa_dbg = getenv("MESA_DEBUG");
+    const char* sdl_videodrv = getenv("SDL_VIDEODRIVER");
+    const char* gdk_gl = getenv("GDK_GL");
+    const char* force_sw_env = getenv("OZ_FORCE_SOFTWARE");
+    const bool is_remote = (disp && disp[0] != ':');
+    OZ_INFO("Platform env: DISPLAY=%s remote=%s LIBGL_ALWAYS_INDIRECT=%s LIBGL_DEBUG=%s MESA_DEBUG=%s SDL_VIDEODRIVER=%s GDK_GL=%s OZ_FORCE_SOFTWARE=%s",
+            disp ? disp : "(null)", is_remote ? "yes" : "no",
+            libgl_ind ? libgl_ind : "(null)",
+            libgl_dbg ? libgl_dbg : "(null)",
+            mesa_dbg ? mesa_dbg : "(null)",
+            sdl_videodrv ? sdl_videodrv : "(null)",
+            gdk_gl ? gdk_gl : "(null)",
+            force_sw_env ? force_sw_env : "(null)");
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
         OZ_ERROR("SDL_Init failed: %s", SDL_GetError());
         return false;
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    const char* force_sw = force_sw_env;
+    if (force_sw && (force_sw[0]=='1' || force_sw[0]=='t' || force_sw[0]=='T' || force_sw[0]=='y' || force_sw[0]=='Y')) {
+        s_software_renderer = true;
+    }
 
+    if (!s_software_renderer) {
+        OZ_INFO("Configuring SDL GL attributes for OpenGL 2.1 context");
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    }
+
+    Uint32 flags = (s_software_renderer ? 0 : SDL_WINDOW_OPENGL) | SDL_WINDOW_SHOWN;
+    OZ_INFO("Creating SDL window %dx%d flags=0x%x (OPENGL=%s)",
+            config ? config->width : 800,
+            config ? config->height : 600,
+            (unsigned)flags, (flags & SDL_WINDOW_OPENGL) ? "yes" : "no");
     s_window = SDL_CreateWindow(
         config && config->title ? config->title : "OzWorld",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         config ? config->width : 800,
         config ? config->height : 600,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN
+        flags
     );
     if (!s_window) {
         OZ_ERROR("SDL_CreateWindow failed: %s", SDL_GetError());
+        // If there is no DISPLAY or remote X without GLX, try a headless no-window mode
+        if (!disp || disp[0] == '\0') {
+            OZ_WARN("No DISPLAY available; running headless software mode");
+            s_software_renderer = true;
+            return true;
+        }
         return false;
     }
 
-    s_gl = SDL_GL_CreateContext(s_window);
-    if (!s_gl) {
-        OZ_ERROR("SDL_GL_CreateContext failed: %s", SDL_GetError());
-        return false;
+    if (!s_software_renderer) {
+        // Try to create a GL context, but tolerate GLX failure over remote X
+        OZ_INFO("Creating SDL GL context...");
+        s_gl = SDL_GL_CreateContext(s_window);
+        if (!s_gl) {
+            OZ_WARN("SDL_GL_CreateContext failed: %s", SDL_GetError());
+            return false;
+        } else {
+            const GLubyte* vendor = glGetString(GL_VENDOR);
+            const GLubyte* renderer = glGetString(GL_RENDERER);
+            const GLubyte* version = glGetString(GL_VERSION);
+            OZ_INFO("GL context created: vendor=%s renderer=%s version=%s",
+                    vendor ? (const char*)vendor : "?",
+                    renderer ? (const char*)renderer : "?",
+                    version ? (const char*)version : "?");
+        }
     }
 
-    SDL_GL_SetSwapInterval(config && config->vsync ? 1 : 0);
+    if (!s_software_renderer && s_gl) {
+        SDL_GL_SetSwapInterval(config && config->vsync ? 1 : 0);
+    }
 
-    OZ_INFO("Platform initialized (SDL2 + OpenGL)");
+    OZ_INFO("Platform ready: software=%s window=%p glctx=%p",
+            s_software_renderer ? "yes" : "no", (void*)s_window, s_gl);
     return true;
 }
 
@@ -90,7 +145,9 @@ void oz_platform_clear(float r, float g, float b, float a) {
 }
 
 void oz_platform_swap_buffers(void) {
-    SDL_GL_SwapWindow(s_window);
+    if (!s_software_renderer && s_window) {
+        SDL_GL_SwapWindow(s_window);
+    }
 }
 
 void oz_platform_sleep_ms(unsigned int ms) {
@@ -108,6 +165,10 @@ void oz_platform_get_window_size(int* out_width, int* out_height) {
     }
     if (out_width) *out_width = w;
     if (out_height) *out_height = h;
+}
+
+bool oz_platform_is_software_renderer(void) {
+    return s_software_renderer;
 }
 
 static SDL_Scancode key_to_scancode(enum OzKey key) {

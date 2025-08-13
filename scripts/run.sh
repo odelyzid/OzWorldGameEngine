@@ -44,13 +44,8 @@ run_editor() {
     echo "Editor not built or GTK3 not found."
     exit 1
   fi
-  # If DISPLAY appears remote (has host part), default to safe mode unless overridden
-  if [[ -n "${DISPLAY:-}" && "${DISPLAY}" != :* && -z "${OZ_ALLOW_GL_REMOTE:-}" ]]; then
-    echo "[run] Remote DISPLAY='${DISPLAY}' detected; running editor with software renderer (GDK_GL=disable)."
-    GDK_GL=disable LIBGL_ALWAYS_INDIRECT=${LIBGL_ALWAYS_INDIRECT:-1} "$build_dir/oz_editor"
-  else
-    "$build_dir/oz_editor"
-  fi
+  # Always prefer OpenGL path. To force software, export GDK_GL=disable explicitly.
+  "$build_dir/oz_editor"
 }
 
 run_game() {
