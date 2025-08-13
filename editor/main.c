@@ -77,7 +77,8 @@ static void action_open(GSimpleAction* action, GVariant* parameter, gpointer use
         "_Open", GTK_RESPONSE_ACCEPT,
         NULL);
     GtkFileFilter* filter = gtk_file_filter_new();
-    gtk_file_filter_set_name(filter, "OzMap files (*.ozmap)");
+    gtk_file_filter_set_name(filter, "OzMap files (*.ozone; *.ozmap)");
+    gtk_file_filter_add_pattern(filter, "*.ozone");
     gtk_file_filter_add_pattern(filter, "*.ozmap");
     gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
@@ -112,15 +113,22 @@ static void action_save(GSimpleAction* action, GVariant* parameter, gpointer use
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
         char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        OZ_INFO("Save file: %s", filename);
-        if (!oz_map_save_text(filename, &ui->map)) {
+        // Ensure .ozone extension by default (accept legacy .ozmap too)
+        char* to_save = NULL;
+        if (filename && !(g_str_has_suffix(filename, ".ozone") || g_str_has_suffix(filename, ".ozmap"))) {
+            to_save = g_strconcat(filename, ".ozone", NULL);
+        }
+        const char* path = to_save ? to_save : filename;
+        OZ_INFO("Save file: %s", path);
+        if (!oz_map_save_text(path, &ui->map)) {
             OZ_ERROR("Failed to save %s", filename);
         } else {
             g_free(ui->current_path);
-            ui->current_path = g_strdup(filename);
+            ui->current_path = g_strdup(path);
             OZ_INFO("Map saved: %zu brushes to %s", ui->map.count, ui->current_path);
             if (ui->viewport && GTK_IS_WIDGET(ui->viewport)) gtk_widget_queue_draw(ui->viewport);
         }
+        if (to_save) g_free(to_save);
         g_free(filename);
     }
     gtk_widget_destroy(dialog);
@@ -137,11 +145,25 @@ static void action_build_brushes(GSimpleAction* a, GVariant* p, gpointer u) { (v
 
 static void spawn_process(char const* const argv[]) {
     GError* error = NULL;
-    gboolean ok = g_spawn_async(NULL, (gchar**)argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
+    // Ensure SDL respects remote X stability: prefer indirect GL unless user overrides
+    gchar** envp = g_get_environ();
+    const gchar* disp = g_environ_getenv(envp, "DISPLAY");
+    const gboolean is_remote = (disp && disp[0] != ':');
+    const gboolean allow_gl = env_flag_is_true("OZ_ALLOW_GL_REMOTE");
+    // Always enable driver debug verbosity and GL error reporting in child processes
+    envp = g_environ_setenv(envp, "LIBGL_DEBUG", "verbose", TRUE);
+    envp = g_environ_setenv(envp, "MESA_DEBUG", "1", TRUE);
+    if (is_remote && !allow_gl) {
+        envp = g_environ_setenv(envp, "LIBGL_ALWAYS_INDIRECT", "1", TRUE);
+        envp = g_environ_setenv(envp, "GDK_GL", "disable", TRUE);
+        envp = g_environ_setenv(envp, "OZ_FORCE_SOFTWARE", "1", TRUE);
+    }
+    gboolean ok = g_spawn_async(NULL, (gchar**)argv, envp, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
     if (!ok) {
         OZ_ERROR("Failed to launch: %s", error ? error->message : "unknown error");
         if (error) g_error_free(error);
     }
+    if (envp) g_strfreev(envp);
 }
 
 static void action_launch_editor(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; const char* argv[] = { "./build/oz_editor", NULL }; spawn_process(argv); }
@@ -433,12 +455,18 @@ static gboolean on_button_press(GtkWidget* w, GdkEventButton* e, gpointer user_d
             if (ui->selected_object >= 0 && (size_t)ui->selected_object < ui->obj_count) {
                 ui->selected_index = -1;
             }
-        } else if (ui && ui->selected_index >= 0) {
-            // Begin gizmo drag
+        } else if (ui && (ui->selected_index >= 0 || (ui->selected_object >= 0 && (size_t)ui->selected_object < ui->obj_count))) {
+            // Begin gizmo drag for brush or object; axis chosen by current setting or dominant delta (set later)
             ui->gizmo_dragging = TRUE;
             ui->gizmo_start_x = e->x;
             ui->gizmo_start_y = e->y;
-            ui->gizmo_start_brush = ui->map.brushes[ui->selected_index];
+            if (ui->selected_index >= 0) ui->gizmo_start_brush = ui->map.brushes[ui->selected_index];
+            if (ui->selected_object >= 0 && (size_t)ui->selected_object < ui->obj_count) {
+                const EditorObject* o = &ui->objects[ui->selected_object];
+                if (o->type == OBJ_ZONE) { ui->gizmo_start_obj_pos[0]=o->as.zone.center[0]; ui->gizmo_start_obj_pos[1]=o->as.zone.center[1]; ui->gizmo_start_obj_pos[2]=o->as.zone.center[2]; }
+                else if (o->type == OBJ_PICKUP) { ui->gizmo_start_obj_pos[0]=o->as.pickup.position[0]; ui->gizmo_start_obj_pos[1]=o->as.pickup.position[1]; ui->gizmo_start_obj_pos[2]=o->as.pickup.position[2]; }
+                else { ui->gizmo_start_obj_pos[0]=o->as.pstart.position[0]; ui->gizmo_start_obj_pos[1]=o->as.pstart.position[1]; ui->gizmo_start_obj_pos[2]=o->as.pstart.position[2]; }
+            }
             s->mouse_look_active = FALSE;
             gdk_window_set_cursor(gtk_widget_get_window(w), gdk_cursor_new_from_name(gdk_display_get_default(), "crosshair"));
         } else {
@@ -477,35 +505,45 @@ static gboolean on_motion(GtkWidget* w, GdkEventMotion* e, gpointer user_data) {
         const float kMaxPitch = 1.55334306f;
         if (s->cam.pitch > kMaxPitch) s->cam.pitch = kMaxPitch;
         if (s->cam.pitch < -kMaxPitch) s->cam.pitch = -kMaxPitch;
-    } else if (ui && ui->gizmo_dragging && ui->selected_index >= 0 && ui->selected_index < (int)ui->map.count) {
-        // Simple gizmo: project mouse delta into world X/Y based on axis selection. Default axis from largest delta
+    } else if (ui && ui->gizmo_dragging && (ui->selected_index >= 0 || (ui->selected_object >= 0 && (size_t)ui->selected_object < ui->obj_count))) {
+        // Gizmo drag: move along selected axis; if axis is -1, choose dominant mouse delta X->X axis, Y->Y axis
         double ddx = e->x - ui->gizmo_start_x;
         double ddy = e->y - ui->gizmo_start_y;
-        OzBrush* br = &ui->map.brushes[ui->selected_index];
-        if (ui->gizmo_translate) {
-            float scale = 0.01f; // pixels to world units
-            int axis = ui->gizmo_axis;
-            if (axis < 0) axis = (fabs(ddx) > fabs(ddy)) ? 0 : 1;
-            if (br->type == OZ_BRUSH_BOX) {
-                *br = ui->gizmo_start_brush;
-                if (axis == 0) br->as.box.center.x += (float)(ddx * scale);
-                else if (axis == 1) br->as.box.center.y -= (float)(ddy * scale);
+        int axis = ui->gizmo_axis;
+        if (axis < 0) axis = (fabs(ddx) > fabs(ddy)) ? 0 : 1;
+        float scale = 0.01f;
+        if (ui->selected_index >= 0 && ui->selected_index < (int)ui->map.count) {
+            OzBrush* br = &ui->map.brushes[ui->selected_index];
+            if (ui->gizmo_translate) {
+                if (br->type == OZ_BRUSH_BOX) {
+                    *br = ui->gizmo_start_brush;
+                    if (axis == 0) br->as.box.center.x += (float)(ddx * scale);
+                    else if (axis == 1) br->as.box.center.y -= (float)(ddy * scale);
+                    else br->as.box.center.z += (float)((-ddy) * scale);
+                }
+            } else if (ui->gizmo_scale) {
+                if (br->type == OZ_BRUSH_BOX) {
+                    *br = ui->gizmo_start_brush;
+                    float delta = (float)((fabs(ddx) > fabs(ddy) ? ddx : -ddy) * scale);
+                    if (axis == 0) br->as.box.half.x = fmaxf(0.05f, ui->gizmo_start_brush.as.box.half.x + delta);
+                    else if (axis == 1) br->as.box.half.y = fmaxf(0.05f, ui->gizmo_start_brush.as.box.half.y + delta);
+                    else br->as.box.half.z = fmaxf(0.05f, ui->gizmo_start_brush.as.box.half.z + delta);
+                }
+            } else if (ui->gizmo_rotate) {
+                if (br->type == OZ_BRUSH_BOX) {
+                    *br = ui->gizmo_start_brush;
+                    float angle = (float)(ddx * 0.005f); // rotate around Z by horizontal drag
+                    br->as.box.rotation_z = ui->gizmo_start_brush.as.box.rotation_z + angle;
+                }
             }
-        } else if (ui->gizmo_scale) {
-            float scale = 0.01f;
-            if (br->type == OZ_BRUSH_BOX) {
-                *br = ui->gizmo_start_brush;
-                float delta = (float)((fabs(ddx) > fabs(ddy) ? ddx : -ddy) * scale);
-                if (ui->gizmo_axis == 0) br->as.box.half.x = fmaxf(0.05f, ui->gizmo_start_brush.as.box.half.x + delta);
-                else if (ui->gizmo_axis == 1) br->as.box.half.y = fmaxf(0.05f, ui->gizmo_start_brush.as.box.half.y + delta);
-                else br->as.box.half.z = fmaxf(0.05f, ui->gizmo_start_brush.as.box.half.z + delta);
-            }
-        } else if (ui->gizmo_rotate) {
-            if (br->type == OZ_BRUSH_BOX) {
-                *br = ui->gizmo_start_brush;
-                float angle = (float)(ddx * 0.005f); // rotate around Z by horizontal drag
-                br->as.box.rotation_z = ui->gizmo_start_brush.as.box.rotation_z + angle;
-            }
+        } else if (ui->selected_object >= 0 && (size_t)ui->selected_object < ui->obj_count) {
+            EditorObject* o = &ui->objects[ui->selected_object];
+            float dx = (float)(ddx * scale), dy = (float)(-ddy * scale);
+            float nx=0, ny=0, nz=0;
+            if (axis == 0) nx = dx; else if (axis == 1) ny = dy; else nz = dy; // map vertical mouse movement to Z when axis=2
+            if (o->type == OBJ_ZONE) { o->as.zone.center[0] = ui->gizmo_start_obj_pos[0] + nx; o->as.zone.center[1] = ui->gizmo_start_obj_pos[1] + ny; o->as.zone.center[2] = ui->gizmo_start_obj_pos[2] + nz; }
+            else if (o->type == OBJ_PICKUP) { o->as.pickup.position[0] = ui->gizmo_start_obj_pos[0] + nx; o->as.pickup.position[1] = ui->gizmo_start_obj_pos[1] + ny; o->as.pickup.position[2] = ui->gizmo_start_obj_pos[2] + nz; }
+            else { o->as.pstart.position[0] = ui->gizmo_start_obj_pos[0] + nx; o->as.pstart.position[1] = ui->gizmo_start_obj_pos[1] + ny; o->as.pstart.position[2] = ui->gizmo_start_obj_pos[2] + nz; }
         }
         if (GTK_IS_WIDGET(w)) gtk_widget_queue_draw(w);
     } else if (ui && ui->dragging && ui->selected_index >= 0 && ui->selected_index < (int)ui->map.count) {
@@ -979,8 +1017,12 @@ static gboolean on_window_delete(GtkWidget* widget, GdkEvent* event, gpointer us
 
 static void gl_area_realize(GtkGLArea* area, gpointer user_data) {
     EditorUi* ui = (EditorUi*)user_data;
+    // Trap potential X/GLX errors and fallback gracefully
+    gdk_error_trap_push();
     gtk_gl_area_make_current(area);
-    if (gtk_gl_area_get_error(area)) {
+    int xerr = gdk_error_trap_pop();
+    if (xerr != 0 || gtk_gl_area_get_error(area)) {
+        OZ_WARN("GLX/GDK error during GtkGLArea realize (code=%d). Falling back to software viewport.", xerr);
         // Fallback: replace GLArea within its current parent container
         GtkWidget* parent = gtk_widget_get_parent(GTK_WIDGET(area));
         GtkWidget* da = gtk_drawing_area_new();
@@ -1644,11 +1686,21 @@ static void on_activate(GtkApplication* app, gpointer user_data) {
         g_signal_connect(gl, "realize", G_CALLBACK(gl_area_realize), ui);
         gtk_widget_set_hexpand(gl, TRUE);
         gtk_widget_set_vexpand(gl, TRUE);
-        ui->gl_area = gl;
-        ui->viewport = gl;
-        gtk_box_pack_start(GTK_BOX(content), gl, TRUE, TRUE, 0);
-        OZ_INFO("Using GtkGLArea viewport");
-    } else {
+        // Defer attaching to layout until after we try to make current once
+        gtk_widget_realize(gl);
+        gdk_error_trap_push();
+        gtk_gl_area_make_current(GTK_GL_AREA(gl));
+        int xerr = gdk_error_trap_pop();
+        if (xerr == 0 && gtk_gl_area_get_error(GTK_GL_AREA(gl)) == NULL) {
+            ui->gl_area = gl;
+            ui->viewport = gl;
+            gtk_box_pack_start(GTK_BOX(content), gl, TRUE, TRUE, 0);
+            OZ_INFO("Using GtkGLArea viewport");
+        } else {
+            OZ_WARN("GLX/GDK error before attach (code=%d). Using software viewport.", xerr);
+        }
+    }
+    if (!ui->viewport) {
         GtkWidget* da = gtk_drawing_area_new();
         OZ_INFO("Using software viewport (GtkDrawingArea)");
         gtk_widget_set_hexpand(da, TRUE);
@@ -1656,7 +1708,7 @@ static void on_activate(GtkApplication* app, gpointer user_data) {
         gtk_widget_set_app_paintable(da, TRUE);
         gtk_widget_set_size_request(da, 320, 200);
         g_signal_connect(da, "draw", G_CALLBACK(fallback_draw), ui);
-        ui->redraw_id = g_timeout_add(16, queue_draw_cb, ui);
+        if (!ui->redraw_id) ui->redraw_id = g_timeout_add(16, queue_draw_cb, ui);
         ui->gl_area = NULL;
         ui->viewport = da;
         gtk_box_pack_start(GTK_BOX(content), da, TRUE, TRUE, 0);

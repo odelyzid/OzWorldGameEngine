@@ -94,7 +94,7 @@ bool oz_map_save_text(const char* path, const OzMap* map) {
     FILE* f = fopen(path, "wb");
     if (!f) return false;
     int ok = 1;
-    if (fprintf(f, "OZMAP 1\n") < 0) ok = 0;
+    if (fprintf(f, "OZONE 1\n") < 0) ok = 0;
     if (ok && fprintf(f, "brushes %zu\n", map->count) < 0) ok = 0;
     for (size_t i = 0; ok && i < map->count; ++i) {
         const OzBrush* b = &map->brushes[i];
@@ -141,7 +141,7 @@ bool oz_map_load_text(const char* path, OzMap* out_map) {
 
     char header[16];
     if (!fgets(header, sizeof(header), f)) { fclose(f); return false; }
-    if (strncmp(header, "OZMAP 1", 7) != 0) { fclose(f); return false; }
+    if (strncmp(header, "OZONE 1", 7) != 0 && strncmp(header, "OZMAP 1", 7) != 0) { fclose(f); return false; }
 
     size_t expected = 0;
     if (fscanf(f, "brushes %zu\n", &expected) != 1) { fclose(f); return false; }

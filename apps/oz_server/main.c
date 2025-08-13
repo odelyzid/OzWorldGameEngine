@@ -120,7 +120,7 @@ static void handle_client(int cfd) {
     if (strcmp(method, "GET") == 0 && strncmp(path, "/map", 4) == 0) {
         char name[256] = {0};
         if (!get_query_param(path, "name", name, sizeof(name))) {
-            strcpy(name, "sample.ozmap");
+            strcpy(name, "sample.ozone");
         }
         OzMap map; oz_map_init(&map);
         if (!oz_map_load_text(name, &map)) {

@@ -5,7 +5,7 @@ This repository scaffolds a cross-platform C/SDL2/OpenGL engine with a nostalgic
 - A tiny core engine library (`ozcore`) with logging, versioning, basic math, and a rudimentary BSP/map module for brush-based geometry
 - An SDL2/OpenGL platform layer (`ozplatform_sdl`) providing windowing, GL context, input, timing
 - A simple demo app (`oz_demo`) that renders basic BSP brushes (box, cylinder) with a free-move camera
-- A GTK3-based editor (`oz_editor`) that can open/save `.ozmap` files, adjust primitive brush dimensions, and show a live viewport
+- A GTK3-based editor (`oz_editor`) that can open/save `.ozone` map files (legacy `.ozmap` still loads), adjust primitive brush dimensions, and show a live viewport
 - A minimal HTTP server (`oz_server`) for future map-serving/authentication prototypes
 
 Quick start
@@ -33,17 +33,17 @@ Run
 - Demo: `./build/oz_demo`
   - Controls: WASD move, QE up/down, arrows rotate camera
 - Editor: `./build/oz_editor`
-  - File → Open/Save: load/save `.ozmap`
+- File → Open/Save: load/save `.ozone`
   - BSP → Brushes → Box... / Cylinder...: set dimensions, adds a brush at origin
   - Viewport: uses GtkGLArea when available; falls back to software (Cairo) rendering if GL is not available
 - Server (UNIX): `./build/oz_server`
-  - GET `/map?name=sample.ozmap` returns JSON; POST `/auth/login` returns a dummy token
+- GET `/map?name=sample.ozone` returns JSON; POST `/auth/login` returns a dummy token
 
 Current engine/core
 - Logging: `oz_log` with colored levels
 - Core: version query via `oz_core_version`
 - Platform (SDL2/OpenGL): window, GL context, clear/swap, time, sleep, key input snapshot
-- BSP/Map: primitive brushes (box, cylinder), dynamic `OzMap`, simple text save/load format (`OZMAP 1`)
+- BSP/Map: primitive brushes (box, cylinder), dynamic `OzMap`, simple text save/load format (`OZONE 1`, loads legacy `OZMAP 1`)
   - Example lines:
     - `box cx cy cz sx sy sz`
     - `cyl cx cy cz rx ry h segments`

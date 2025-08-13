@@ -7,6 +7,9 @@
 #include "oz/oz_camera.h"
 #ifdef OZ_HAVE_SDL2
 #include <GL/gl.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #endif
 
 static void draw_box_wireframe(const OzBrushBox* b) {
@@ -183,7 +186,26 @@ static void draw_map_filled(const OzMap* map) {
 }
 
 int main(int argc, char** argv) {
+    // Disable stdio buffering so logs flush before any crash
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
     OZ_INFO("OzWorld version %s", oz_core_version());
+    // Echo environment that influences rendering
+    const char* disp = getenv("DISPLAY");
+    const char* libgl_ind = getenv("LIBGL_ALWAYS_INDIRECT");
+    const char* libgl_dbg = getenv("LIBGL_DEBUG");
+    const char* mesa_dbg = getenv("MESA_DEBUG");
+    const char* gdk_gl = getenv("GDK_GL");
+    const char* force_sw = getenv("OZ_FORCE_SOFTWARE");
+    OZ_INFO("Demo env: DISPLAY=%s LIBGL_ALWAYS_INDIRECT=%s LIBGL_DEBUG=%s MESA_DEBUG=%s GDK_GL=%s OZ_FORCE_SOFTWARE=%s",
+            disp ? disp : "(null)",
+            libgl_ind ? libgl_ind : "(null)",
+            libgl_dbg ? libgl_dbg : "(null)",
+            mesa_dbg ? mesa_dbg : "(null)",
+            gdk_gl ? gdk_gl : "(null)",
+            force_sw ? force_sw : "(null)");
+    fprintf(stderr, "[demo-raw] DISPLAY=%s LIBGL_ALWAYS_INDIRECT=%s LIBGL_DEBUG=%s MESA_DEBUG=%s GDK_GL=%s OZ_FORCE_SOFTWARE=%s\n",
+            disp ? disp : "(null)", libgl_ind ? libgl_ind : "(null)", libgl_dbg ? libgl_dbg : "(null)", mesa_dbg ? mesa_dbg : "(null)", gdk_gl ? gdk_gl : "(null)", force_sw ? force_sw : "(null)");
 
     struct OzWindowConfig cfg = { .width = 640, .height = 480, .title = "OzWorld Demo", .vsync = true };
     if (!oz_platform_init(&cfg)) {
@@ -191,13 +213,19 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    if (oz_platform_is_software_renderer()) {
+        OZ_WARN("Running in software mode (no GL context). Exiting after diagnostics.");
+        oz_platform_shutdown();
+        return 0;
+    }
+
     // Create a simple map with two brushes, save & load back
     OzMap map; oz_map_init(&map);
     oz_map_add_box(&map, (OzVec3){0.0f, 0.0f, 0.0f}, (OzVec3){1.0f, 1.0f, 1.0f});
     oz_map_add_cylinder(&map, (OzVec3){1.5f, 0.0f, 0.0f}, 0.5f, 0.5f, 1.0f, 16);
-    oz_map_save_text("sample.ozmap", &map);
+    oz_map_save_text("sample.ozone", &map);
     OzMap loaded; oz_map_init(&loaded);
-    oz_map_load_text("sample.ozmap", &loaded);
+    oz_map_load_text("sample.ozone", &loaded);
 
     double t0 = oz_platform_time_now_seconds();
     OzCamera cam; oz_camera_init(&cam, OZ_CAMERA_FREEMOVE);

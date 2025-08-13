@@ -23,7 +23,7 @@ OzWorld
 already running: 
 - basic build
 - gtk + opengl init 
-- Basic Map Loading and saving as .ozmap file 
+- Basic Map Loading and saving as .ozone file (legacy .ozmap loads)
 - bsp brushes
 - debug logging 
 
