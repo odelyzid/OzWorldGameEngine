@@ -5,6 +5,7 @@
 #include <math.h>
 #include "oz/oz_bsp.h"
 #include "oz/oz_camera.h"
+#include "oz/oz_audio.h"
 #ifdef OZ_HAVE_SDL2
 #include <GL/gl.h>
 #include <string.h>
@@ -219,6 +220,9 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    // Initialize audio (optional)
+    if (!oz_audio_init()) { OZ_WARN("Audio init failed or disabled."); }
+
     // Create a simple map with two brushes, save & load back
     OzMap map; oz_map_init(&map);
     oz_map_add_box(&map, (OzVec3){0.0f, 0.0f, 0.0f}, (OzVec3){1.0f, 1.0f, 1.0f});
@@ -237,6 +241,9 @@ int main(int argc, char** argv) {
         }
     }
     bool quit = false;
+    // Attempt to play background music if present
+    (void)oz_audio_play_music("music.ozmux", -1);
+
     while (!quit) {
         if (!oz_platform_pump_events(&quit)) break;
 
@@ -268,6 +275,7 @@ int main(int argc, char** argv) {
 
     oz_map_free(&map);
     oz_map_free(&loaded);
+    oz_audio_shutdown();
     oz_platform_shutdown();
     return 0;
 }

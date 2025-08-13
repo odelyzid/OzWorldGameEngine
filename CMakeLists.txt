@@ -6,6 +6,7 @@ project(OzWorld VERSION 0.1.0 LANGUAGES C)
 option(OZ_BUILD_DEMO "Build the SDL2/OpenGL demo" ON)
 option(OZ_BUILD_EDITOR "Build the GTK3 editor" ON)
 option(OZ_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+option(OZ_WITH_AUDIO "Enable SDL_mixer-based audio playback" ON)
 
 # Default build type
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -41,6 +42,7 @@ add_library(ozcore
   src/core/oz_assets.c
   src/core/oz_tex.c
   src/core/oz_bundle.c
+  src/core/oz_audio_sdlmixer.c
 )
 
 target_include_directories(ozcore PUBLIC
@@ -49,6 +51,14 @@ target_include_directories(ozcore PUBLIC
 )
 if(UNIX)
   target_link_libraries(ozcore PUBLIC m)
+endif()
+if(OZ_HAVE_SDL_MIXER)
+  target_compile_definitions(ozcore PUBLIC OZ_HAVE_SDL_MIXER=1)
+  if(TARGET SDL2_mixer::SDL2_mixer)
+    target_link_libraries(ozcore PUBLIC SDL2_mixer::SDL2_mixer)
+  elseif(TARGET PkgConfig::SDL2_MIXER)
+    target_link_libraries(ozcore PUBLIC PkgConfig::SDL2_MIXER)
+  endif()
 endif()
 
 # Dependencies discovery helpers
@@ -59,6 +69,7 @@ find_package(PkgConfig QUIET)
 set(OZ_HAVE_SDL2 OFF)
 set(OZ_HAVE_OPENGL OFF)
 set(OZ_HAVE_GTK3 OFF)
+set(OZ_HAVE_SDL_MIXER OFF)
 
 # OpenGL
 find_package(OpenGL QUIET)
@@ -74,6 +85,19 @@ elseif(PkgConfig_FOUND)
   pkg_check_modules(SDL2 QUIET IMPORTED_TARGET sdl2)
   if(TARGET PkgConfig::SDL2)
     set(OZ_HAVE_SDL2 ON)
+  endif()
+endif()
+
+# SDL2_mixer (audio)
+if(OZ_WITH_AUDIO)
+  find_package(SDL2_mixer QUIET CONFIG)
+  if(TARGET SDL2_mixer::SDL2_mixer)
+    set(OZ_HAVE_SDL_MIXER ON)
+  elseif(PkgConfig_FOUND)
+    pkg_check_modules(SDL2_MIXER QUIET IMPORTED_TARGET SDL2_mixer)
+    if(TARGET PkgConfig::SDL2_MIXER)
+      set(OZ_HAVE_SDL_MIXER ON)
+    endif()
   endif()
 endif()
 
