@@ -30,6 +30,10 @@ double oz_platform_time_now_seconds(void);
 // Returns the current window drawable size in pixels
 void oz_platform_get_window_size(int* out_width, int* out_height);
 
+// Returns true when the platform fell back to a non-OpenGL software renderer.
+// Useful for apps to avoid issuing GL calls when running over remote X servers.
+bool oz_platform_is_software_renderer(void);
+
 // Minimal key input API for demo/editor controls
 typedef enum OzKey {
     OZ_KEY_W,

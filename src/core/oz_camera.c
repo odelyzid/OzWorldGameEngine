@@ -5,7 +5,7 @@ void oz_camera_init(OzCamera* cam, OzCameraMode mode) {
     cam->mode = mode;
     cam->position = (OzVec3){0.0f, -4.0f, 2.5f};
     cam->yaw = 0.0f;
-    cam->pitch = -0.2f;
+    cam->pitch = 0.088f;
     cam->roll = 0.0f;
     cam->moveSpeed = 3.0f;   // units/sec
     cam->turnSpeed = 1.5f;   // rad/sec
@@ -32,7 +32,7 @@ float oz_camera_update_freemove(OzCamera* cam, float dt_seconds,
     // Rotation controlled by mouse look in the editor; arrow keys reserved for gizmo/nudging
 
     // Clamp pitch to avoid flipping; keep within (-89°, +89°)
-    const float kMaxPitch = 1.55334306f; // ~89 degrees
+    const float kMaxPitch = 3.55334306f; // ~89 degrees
     if (cam->pitch > kMaxPitch) cam->pitch = kMaxPitch;
     if (cam->pitch < -kMaxPitch) cam->pitch = -kMaxPitch;
 
