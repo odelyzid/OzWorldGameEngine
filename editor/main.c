@@ -2,6 +2,7 @@
 #include "oz/oz_core.h"
 #include "oz/oz_log.h"
 #include "oz/oz_bsp.h"
+#include "oz/oz_assets.h"
 #include "editor.h"
 #include "oz/oz_camera.h"
 #include <GL/gl.h>
@@ -132,6 +133,38 @@ static void action_save(GSimpleAction* action, GVariant* parameter, gpointer use
         g_free(filename);
     }
     gtk_widget_destroy(dialog);
+}
+
+static void choose_and_remember(EditorUi* ui, const char* title, const char* filter_name, const char* pattern, char** last_path_out) {
+    GtkWidget* dialog = gtk_file_chooser_dialog_new(title,
+        GTK_WINDOW(ui->window), GTK_FILE_CHOOSER_ACTION_OPEN,
+        "_Cancel", GTK_RESPONSE_CANCEL,
+        "_Open", GTK_RESPONSE_ACCEPT,
+        NULL);
+    GtkFileFilter* filter = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, filter_name);
+    gtk_file_filter_add_pattern(filter, pattern);
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+        char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+        if (last_path_out) { g_free(*last_path_out); *last_path_out = g_strdup(filename); }
+        OZ_INFO("Imported: %s", filename);
+        g_free(filename);
+    }
+    gtk_widget_destroy(dialog);
+}
+
+static void on_import_texture(GSimpleAction* a, GVariant* p, gpointer user_data) {
+    (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
+    choose_and_remember(ui, "Import Texture", "OzTex files (*.oztex)", "*.oztex", &ui->last_texture_path);
+}
+static void on_import_bundle(GSimpleAction* a, GVariant* p, gpointer user_data) {
+    (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
+    choose_and_remember(ui, "Import Mesh Bundle", "OzBag files (*.ozbag)", "*.ozbag", &ui->last_bundle_path);
+}
+static void on_import_music(GSimpleAction* a, GVariant* p, gpointer user_data) {
+    (void)a; (void)p; EditorUi* ui = (EditorUi*)user_data; if (!ui) return;
+    choose_and_remember(ui, "Import Music", "OzMux files (*.ozmux)", "*.ozmux", &ui->last_music_path);
 }
 
 static void action_build_common(const char* what) {
@@ -1083,6 +1116,12 @@ static void build_menu_file(GtkApplication* app, EditorUi* ui, GMenu* menubar) {
     GMenu* file_menu = g_menu_new();
     g_menu_append(file_menu, "Open",  "app.open");
     g_menu_append(file_menu, "Save",  "app.save");
+    // Import submenu for assets
+    GMenu* import_menu = g_menu_new();
+    g_menu_append(import_menu, "Import Texture (.oztex)", "app.import_texture");
+    g_menu_append(import_menu, "Import Mesh Bundle (.ozbag)", "app.import_bundle");
+    g_menu_append(import_menu, "Import Music (.ozmux)", "app.import_music");
+    g_menu_append_submenu(file_menu, "Import", G_MENU_MODEL(import_menu));
     GMenu* file_section_launch = g_menu_new();
     g_menu_append(file_section_launch, "Launch Editor", "app.launch_editor");
     g_menu_append(file_section_launch, "Launch Game",   "app.launch_game");
@@ -1091,6 +1130,7 @@ static void build_menu_file(GtkApplication* app, EditorUi* ui, GMenu* menubar) {
     g_menu_append(file_menu, "Quit",  "app.quit");
     g_menu_append_submenu(menubar, "File", G_MENU_MODEL(file_menu));
     g_object_unref(file_menu);
+    g_object_unref(import_menu);
     g_object_unref(file_section_launch);
 }
 
@@ -1519,6 +1559,9 @@ static void populate_menus(GtkApplication* app, EditorUi* ui) {
     const GActionEntry entries[] = {
         { "open",  action_open,  NULL, NULL, NULL },
         { "save",  action_save,  NULL, NULL, NULL },
+        { "import_texture", on_import_texture, NULL, NULL, NULL },
+        { "import_bundle",  on_import_bundle,  NULL, NULL, NULL },
+        { "import_music",   on_import_music,   NULL, NULL, NULL },
         { "view_grab_focus", action_view_grab_focus, NULL, NULL, NULL },
         { "build_map",     action_build_map,     NULL, NULL, NULL },
         { "build_light",   action_build_light,   NULL, NULL, NULL },

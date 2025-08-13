@@ -46,6 +46,7 @@ typedef struct EditorUi {
     double gizmo_start_x;
     double gizmo_start_y;
     OzBrush gizmo_start_brush;
+    float gizmo_start_obj_pos[3];
 
     // Debug toggles
     gboolean dbg_show_grid;
@@ -67,6 +68,11 @@ typedef struct EditorUi {
     int selected_object; // -1 none
     GtkWidget* obj_browser_win;
     GtkWidget* obj_scene_list;
+
+    // Last imported assets (paths)
+    char* last_texture_path;
+    char* last_bundle_path;
+    char* last_music_path;
 } EditorUi;
 
 typedef enum EditorObjectType {

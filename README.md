@@ -6,6 +6,7 @@ This repository scaffolds a cross-platform C/SDL2/OpenGL engine with a nostalgic
 - An SDL2/OpenGL platform layer (`ozplatform_sdl`) providing windowing, GL context, input, timing
 - A simple demo app (`oz_demo`) that renders basic BSP brushes (box, cylinder) with a free-move camera
 - A GTK3-based editor (`oz_editor`) that can open/save `.ozone` map files (legacy `.ozmap` still loads), adjust primitive brush dimensions, and show a live viewport
+- Asset conventions: textures `.oztex`, mesh bundles `.ozbag`, music `.ozmux` (MP3 content). Editor offers Import dialogs for these.
 - A minimal HTTP server (`oz_server`) for future map-serving/authentication prototypes
 
 Quick start
