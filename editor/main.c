@@ -56,73 +56,10 @@ static gboolean env_flag_is_true(const char* name) {
     return g_ascii_strcasecmp(v, "1") == 0 || g_ascii_strcasecmp(v, "true") == 0 || g_ascii_strcasecmp(v, "yes") == 0;
 }
 
-// EditorUi is now in editor/editor.h
-
-// moved to src/editor/ui/ui.c
-
-// moved to src/editor/ui/ui.c
-
-// moved to src/editor/ui/ui.c
-
-// moved to src/editor/ui/ui.c
-
-// moved to src/editor/ui/ui.c
-// moved to src/editor/ui/ui.c
-// moved to src/editor/ui/ui.c
 
 static void action_build_common(const char* what) {
     OZ_INFO("Build: %s (stub)", what);
 }
-
-// moved to src/editor/ui/ui.c
-
-/* moved to src/editor/ui/ui.c
-static void spawn_process(char const* const argv[]) {
-    GError* error = NULL;
-    // Ensure SDL respects remote X stability: prefer indirect GL unless user overrides
-    gchar** envp = g_get_environ();
-    const gchar* disp = g_environ_getenv(envp, "DISPLAY");
-    const gboolean is_remote = (disp && disp[0] != ':');
-    const gboolean allow_gl = env_flag_is_true("OZ_ALLOW_GL_REMOTE");
-    // Always enable driver debug verbosity and GL error reporting in child processes
-    envp = g_environ_setenv(envp, "LIBGL_DEBUG", "verbose", TRUE);
-    envp = g_environ_setenv(envp, "MESA_DEBUG", "1", TRUE);
-    if (is_remote && !allow_gl) {
-        envp = g_environ_setenv(envp, "LIBGL_ALWAYS_INDIRECT", "1", TRUE);
-        envp = g_environ_setenv(envp, "GDK_GL", "disable", TRUE);
-        envp = g_environ_setenv(envp, "OZ_FORCE_SOFTWARE", "1", TRUE);
-    }
-    gboolean ok = g_spawn_async(NULL, (gchar**)argv, envp, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &error);
-    if (!ok) {
-        OZ_ERROR("Failed to launch: %s", error ? error->message : "unknown error");
-        if (error) g_error_free(error);
-    }
-    if (envp) g_strfreev(envp);
-}
-*/
-
-/* moved to src/editor/ui/ui.c
-void action_launch_editor(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; const char* argv[] = { "./build/oz_editor", NULL }; spawn_process(argv); }
-void action_launch_game(GSimpleAction* a, GVariant* p, gpointer u) {
-    (void)a; (void)p; EditorUi* ui = (EditorUi*)u;
-    // Pass a start position/yaw if a PlayerStart exists
-    char arg_pos[128] = {0};
-    int found = -1;
-    if (ui && ui->obj_count) {
-        for (size_t i = 0; i < ui->obj_count; ++i) if (ui->objects[i].type == OBJ_PLAYER_START) { found = (int)i; break; }
-    }
-    const char* argv_default[] = { "./build/oz_demo", NULL };
-    char* argv_custom[5] = { (char*)"./build/oz_demo", (char*)"--playerstart", arg_pos, NULL, NULL };
-    if (found >= 0) {
-        const ObjPlayerStartProps* ps = &ui->objects[found].as.pstart;
-        g_snprintf(arg_pos, sizeof(arg_pos), "%g,%g,%g,%g", (double)ps->position[0], (double)ps->position[1], (double)ps->position[2], (double)ps->yaw);
-        spawn_process((const char* const*)argv_custom);
-    } else {
-        spawn_process(argv_default);
-    }
-}
-void action_launch_server(GSimpleAction* a, GVariant* p, gpointer u) { (void)a; (void)p; (void)u; OZ_WARN("Server launch not implemented"); }
-*/
 
 // Dialog helpers
 static void dialog_set_entry(GtkDialog* dlg, const char* label, GtkWidget** out_entry, const char* initial) {
@@ -258,6 +195,15 @@ typedef struct EditorInputState {
 } EditorInputState;
 
 static EditorInputState* g_editor_state = NULL;
+// Helper: screen-space distance from point to segment within tolerance
+static bool is_near_segment(float px, float py, float x0, float y0, float x1, float y1, float tol_pix) {
+    float vx = x1 - x0, vy = y1 - y0;
+    float wx = px - x0, wy = py - y0;
+    float vv = vx*vx + vy*vy; if (vv < 1e-5f) return false;
+    float t = (vx*wx + vy*wy) / vv; if (t < 0.0f) t = 0.0f; if (t > 1.0f) t = 1.0f;
+    float dxp = (x0 + t*vx) - px; float dyp = (y0 + t*vy) - py;
+    return (dxp*dxp + dyp*dyp) <= tol_pix*tol_pix;
+}
 static bool editor_key_down(enum OzKey key) {
     if (!g_editor_state) return false;
     switch (key) {
@@ -284,25 +230,7 @@ static void ensure_viewport_focus(EditorUi* ui) {
 static void editor_project_point(EditorUi* ui, float x, float y, float z, float* out_x, float* out_y) {
     int w = gtk_widget_get_allocated_width(ui->viewport);
     int h = gtk_widget_get_allocated_height(ui->viewport);
-    float yaw = g_editor_state ? g_editor_state->cam.yaw : 0.0f;
-    float pitch = g_editor_state ? g_editor_state->cam.pitch : 0.0f;
-    float px = g_editor_state ? g_editor_state->cam.position.x : 0.0f;
-    float py = g_editor_state ? g_editor_state->cam.position.y : -5.0f;
-    float pz = g_editor_state ? g_editor_state->cam.position.z : -2.5f;
-    x -= px; y -= py; z -= pz;
-    float cy = cosf(-yaw), sy = sinf(-yaw);
-    float x1 =  cy * x + sy * y;
-    float y1 = -sy * x + cy * y;
-    float z1 = z;
-    float cp = cosf(-pitch), sp = sinf(-pitch);
-    float x2 = x1;
-    float y2 = cp * y1 - sp * z1;
-    float z2 = sp * y1 + cp * z1;
-    float fov = 60.0f; float f = 1.0f / tanf(fov * (float)G_PI / 360.0f);
-    float ndc_x = (x2 * f) / (z2 + 5.0f);
-    float ndc_y = (y2 * f) / (z2 + 5.0f);
-    *out_x = (float)w * 0.5f + ndc_x * (float)w * 0.5f;
-    *out_y = (float)h * 0.5f - ndc_y * (float)h * 0.5f;
+    oz_render_soft_project_point(g_editor_state ? &g_editor_state->cam : NULL, x, y, z, w, h, out_x, out_y);
 }
 
 
@@ -312,6 +240,11 @@ static gboolean on_key_press(GtkWidget* w, GdkEventKey* e, gpointer user_data) {
     editor_input_handle_key(k, true, e->state);
     if (env_flag_is_true("OZ_DEBUG_INPUT")) {
         OZ_INFO("key down: %u '%c' state=%u", k, (k>=32 && k<127)?(int)k:'.', (unsigned) e->state);
+    }
+    // Lighting toggle with 'L'
+    if (e->keyval == GDK_KEY_l || e->keyval == GDK_KEY_L) {
+        EditorUi* ui = (EditorUi*)g_object_get_data(G_OBJECT(w), "oz_editor_ui");
+        if (ui) { ui->dbg_lighting = !ui->dbg_lighting; if (ui->viewport) gtk_widget_queue_draw(ui->viewport); }
     }
     return FALSE;
 }
@@ -484,6 +417,32 @@ static gboolean on_motion(GtkWidget* w, GdkEventMotion* e, gpointer user_data) {
         if (o->type == OBJ_ZONE) { o->as.zone.center[0] += mx; o->as.zone.center[1] += my; }
         else if (o->type == OBJ_PICKUP) { o->as.pickup.position[0] += mx; o->as.pickup.position[1] += my; }
         else if (o->type == OBJ_PLAYER_START) { o->as.pstart.position[0] += mx; o->as.pstart.position[1] += my; }
+        if (GTK_IS_WIDGET(w)) gtk_widget_queue_draw(w);
+    } else if (ui) {
+        // Hover feedback: axis or object under cursor
+        // Check axis hover at origin gizmo in screen space
+        float ax0, ay0, ax1, ay1, bx0, by0, bx1, by1, cx0, cy0, cx1, cy1;
+        editor_project_point(ui, 0,0,0, &ax0,&ay0);
+        editor_project_point(ui, 3,0,0, &ax1,&ay1);
+        editor_project_point(ui, 0,3,0, &bx1,&by1); bx0=ax0; by0=ay0;
+        editor_project_point(ui, 0,0,3, &cx1,&cy1); cx0=ax0; cy0=ay0;
+        ui->gizmo_axis = -1;
+        const float tol = 6.0f;
+        if (is_near_segment((float)e->x, (float)e->y, ax0, ay0, ax1, ay1, tol)) ui->gizmo_axis = 0;
+        else if (is_near_segment((float)e->x, (float)e->y, bx0, by0, bx1, by1, tol)) ui->gizmo_axis = 1;
+        else if (is_near_segment((float)e->x, (float)e->y, cx0, cy0, cx1, cy1, tol)) ui->gizmo_axis = 2;
+        // Object hover (nearest projected center within radius)
+        ui->hover_object = -1; float best_d2 = 1e9f; int best = -1;
+        for (size_t i = 0; i < ui->obj_count; ++i) {
+            float ox=0,oy=0,oz=0;
+            if (ui->objects[i].type == OBJ_ZONE) { ox=ui->objects[i].as.zone.center[0]; oy=ui->objects[i].as.zone.center[1]; oz=ui->objects[i].as.zone.center[2]; }
+            else if (ui->objects[i].type == OBJ_PICKUP) { ox=ui->objects[i].as.pickup.position[0]; oy=ui->objects[i].as.pickup.position[1]; oz=ui->objects[i].as.pickup.position[2]; }
+            else { ox=ui->objects[i].as.pstart.position[0]; oy=ui->objects[i].as.pstart.position[1]; oz=ui->objects[i].as.pstart.position[2]; }
+            float sx, sy; editor_project_point(ui, ox, oy, oz, &sx, &sy);
+            float dxp = (float)e->x - sx, dyp = (float)e->y - sy; float d2 = dxp*dxp + dyp*dyp;
+            if (d2 < best_d2) { best_d2 = d2; best = (int)i; }
+        }
+        if (best >= 0 && best_d2 < 18.0f*18.0f) ui->hover_object = best;
         if (GTK_IS_WIDGET(w)) gtk_widget_queue_draw(w);
     }
     return TRUE;
@@ -820,9 +779,12 @@ static gboolean fallback_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data
     if (!logged_once) { OZ_INFO("fallback_draw called"); logged_once = TRUE; }
     int w = gtk_widget_get_allocated_width(widget);
     int h = gtk_widget_get_allocated_height(widget);
-    cairo_set_source_rgb(cr, 0.1, 0.1, 0.12);
+    // Background similar to SW demo for visual consistency
+    cairo_set_source_rgb(cr, 0.1, 0.105, 0.12);
     cairo_paint(cr);
     oz_render_soft_draw_grid_axes(cr, w, h, g_editor_state ? &g_editor_state->cam : NULL, TRUE, ui->dbg_show_axes);
+    // Render shared gizmos (tripod)
+    oz_render_soft_draw_gizmos(cr, w, h, g_editor_state ? &g_editor_state->cam : NULL);
     cairo_set_source_rgb(cr, 1, 1, 1);
     cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_font_size(cr, 12);
@@ -848,7 +810,30 @@ static gboolean fallback_draw(GtkWidget* widget, cairo_t* cr, gpointer user_data
         }
     }
 
+    // Draw objects with hover feedback
+    if (ui->obj_count) {
+        for (size_t i = 0; i < ui->obj_count; ++i) {
+            const EditorObject* o = &ui->objects[i];
+            float sx, sy; float ox=0,oy=0,oz=0;
+            if (o->type == OBJ_ZONE) { ox=o->as.zone.center[0]; oy=o->as.zone.center[1]; oz=o->as.zone.center[2]; }
+            else if (o->type == OBJ_PICKUP) { ox=o->as.pickup.position[0]; oy=o->as.pickup.position[1]; oz=o->as.pickup.position[2]; }
+            else { ox=o->as.pstart.position[0]; oy=o->as.pstart.position[1]; oz=o->as.pstart.position[2]; }
+            oz_render_soft_project_point(g_editor_state?&g_editor_state->cam:NULL, ox,oy,oz, w,h, &sx, &sy);
+            if ((int)i == ui->hover_object) cairo_set_source_rgb(cr, 1.0, 0.9, 0.3);
+            else cairo_set_source_rgb(cr, 0.9, 0.85, 0.2);
+            cairo_arc(cr, sx, sy, 6.0, 0, 6.28318); cairo_fill(cr);
+        }
+    }
+    // Draw map (selection highlight handled inside)
     oz_render_soft_draw_map(cr, w, h, &ui->map, g_editor_state ? &g_editor_state->cam : NULL, ui->selected_index);
+    // Draw transform gizmo hover axis highlight (screen-space lines)
+    if (ui->gizmo_axis >= 0) {
+        float ax0, ay0, ax1, ay1; oz_render_soft_project_point(g_editor_state?&g_editor_state->cam:NULL, 0,0,0, w,h, &ax0,&ay0);
+        if (ui->gizmo_axis == 0) { oz_render_soft_project_point(g_editor_state?&g_editor_state->cam:NULL, 3,0,0, w,h, &ax1,&ay1); cairo_set_source_rgb(cr,1,0.3,0.3); }
+        else if (ui->gizmo_axis == 1) { oz_render_soft_project_point(g_editor_state?&g_editor_state->cam:NULL, 0,3,0, w,h, &ax1,&ay1); cairo_set_source_rgb(cr,0.3,1,0.3); }
+        else { oz_render_soft_project_point(g_editor_state?&g_editor_state->cam:NULL, 0,0,3, w,h, &ax1,&ay1); cairo_set_source_rgb(cr,0.3,0.6,1); }
+        cairo_set_line_width(cr, 4.0); cairo_move_to(cr, ax0, ay0); cairo_line_to(cr, ax1, ay1); cairo_stroke(cr);
+    }
     // We handled drawing fully; stop further processing to avoid overdraw
     return TRUE;
 }

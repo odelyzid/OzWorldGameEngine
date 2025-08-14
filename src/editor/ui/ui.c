@@ -170,10 +170,14 @@ void action_launch_game(GSimpleAction* a, GVariant* p, gpointer u) {
     (void)a; (void)p; EditorUi* ui = (EditorUi*)u; char arg_pos[128] = {0}; int found = -1;
     if (ui && ui->obj_count) { for (size_t i = 0; i < ui->obj_count; ++i) if (ui->objects[i].type == OBJ_PLAYER_START) { found = (int)i; break; } }
     const char* argv_default[] = { "./build/oz_demo", NULL };
-    char* argv_custom[5] = { (char*)"./build/oz_demo", (char*)"--playerstart", arg_pos, NULL, NULL };
+    char* argv_custom[7] = { (char*)"./build/oz_demo", (char*)"--playerstart", arg_pos, (char*)"--mode", (char*)"freemove", NULL, NULL };
     if (found >= 0) {
         const ObjPlayerStartProps* ps = &ui->objects[found].as.pstart;
         g_snprintf(arg_pos, sizeof(arg_pos), "%g,%g,%g,%g", (double)ps->position[0], (double)ps->position[1], (double)ps->position[2], (double)ps->yaw);
+        const char* mode = "freemove";
+        if (ps->camera_mode == OZ_CAMERA_FPS) mode = "fps";
+        else if (ps->camera_mode == OZ_CAMERA_CINEMATIC) mode = "cinematic";
+        argv_custom[4] = (char*)mode;
         spawn_process((const char* const*)argv_custom);
     } else { spawn_process(argv_default); }
 }

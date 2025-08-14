@@ -47,11 +47,13 @@ typedef struct EditorUi {
     double gizmo_start_y;
     OzBrush gizmo_start_brush;
     float gizmo_start_obj_pos[3];
+    int hover_object; // -1 if none; index into objects when hovering
 
     // Debug toggles
     gboolean dbg_show_grid;
     gboolean dbg_show_axes;
     gboolean dbg_show_fps;
+    gboolean dbg_lighting; // toggle via 'L'
 
     // CSG preview (not yet committed)
     gboolean has_csg_preview;

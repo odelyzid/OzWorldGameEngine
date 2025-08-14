@@ -44,11 +44,20 @@ static void project_point(const OzCamera* cam, float x, float y, float z, int w,
     const float PI = 3.14159265358979323846f;
     const float f = 1.0f / tanf(pp.verticalFovDegrees * PI / 360.0f);
     const float aspect = (float)w / (float)h;
-    float denom = -cz; if (denom < pp.nearPlane) denom = pp.nearPlane;
-    float ndc_x = (cx * (f / aspect)) / denom;
-    float ndc_y = (cy * f) / denom;
+    // cz is camera-space Z pointing forward; avoid dividing by near-zero which looked like zoom-out.
+    float denom = (cz);
+    if (denom > -pp.nearPlane) denom = -pp.nearPlane; // clamp in front of the near plane (cz negative)
+    float ndc_x = (cx * (f / aspect)) / (-denom);
+    float ndc_y = (cy * f) / (-denom);
     *out_x = (ndc_x * 0.5f + 0.5f) * (float)w;
     *out_y = (1.0f - (ndc_y * 0.5f + 0.5f)) * (float)h;
+}
+
+void oz_render_soft_project_point(const OzCamera* cam,
+                                  float x, float y, float z,
+                                  int w, int h,
+                                  float* out_x, float* out_y) {
+    project_point(cam, x, y, z, w, h, out_x, out_y);
 }
 
 // Project a camera-space point to screen
@@ -59,9 +68,10 @@ static inline void project_point_camera(float cx, float cy, float cz, int w, int
     const float PI = 3.14159265358979323846f;
     const float f = 1.0f / tanf(pp.verticalFovDegrees * PI / 360.0f);
     const float aspect = (float)w / (float)h;
-    float denom = -cz; if (denom < pp.nearPlane) denom = pp.nearPlane;
-    float ndc_x = (cx * (f / aspect)) / denom;
-    float ndc_y = (cy * f) / denom;
+    float denom = (cz);
+    if (denom > -pp.nearPlane) denom = -pp.nearPlane;
+    float ndc_x = (cx * (f / aspect)) / (-denom);
+    float ndc_y = (cy * f) / (-denom);
     *out_x = (ndc_x * 0.5f + 0.5f) * (float)w;
     *out_y = (1.0f - (ndc_y * 0.5f + 0.5f)) * (float)h;
 }

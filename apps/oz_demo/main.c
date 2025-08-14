@@ -209,6 +209,17 @@ int main(int argc, char** argv) {
     if (oz_platform_is_software_renderer()) {
         OZ_WARN("Running in software mode (no GL context). Using Cairo-style software renderer.");
         OzCamera cam; oz_camera_init(&cam, OZ_CAMERA_FREEMOVE);
+        // Parse optional --mode fps|freemove|cinematic
+        OzCameraMode mode = OZ_CAMERA_FREEMOVE;
+        for (int i = 1; i < argc; ++i) {
+            if (strcmp(argv[i], "--mode") == 0 && i + 1 < argc) {
+                const char* m = argv[i+1];
+                if (strcmp(m, "fps") == 0) mode = OZ_CAMERA_FPS;
+                else if (strcmp(m, "freemove") == 0) mode = OZ_CAMERA_FREEMOVE;
+                else if (strcmp(m, "cinematic") == 0) mode = OZ_CAMERA_CINEMATIC;
+            }
+        }
+        cam.mode = mode;
         if (argc >= 3 && strcmp(argv[1], "--playerstart") == 0 && argv[2]) {
             double x=0,y=0,z=0,yaw=0; if (sscanf(argv[2], "%lf,%lf,%lf,%lf", &x,&y,&z,&yaw) == 4) {
                 oz_camera_set_position(&cam, (float)x, (float)y, (float)z);
@@ -236,6 +247,18 @@ int main(int argc, char** argv) {
                     row[x*4+3] = 0xFF; // A
                 }
             }
+            // Mouse look similar to SW demo: hold left mouse button
+            if (oz_platform_is_mouse_look_active()) {
+                float mdx=0.0f, mdy=0.0f; oz_platform_get_relative_mouse_delta(&mdx, &mdy);
+                const float sens_yaw = 0.0025f;   // rad/pixel
+                const float sens_pitch = 0.0020f; // rad/pixel
+                cam.yaw   += mdx * sens_yaw;
+                cam.pitch -= mdy * sens_pitch;
+            }
+            // Update camera per mode using platform keys
+            if (cam.mode == OZ_CAMERA_FPS) (void)oz_camera_update_fps(&cam, 1.0f/60.0f, oz_platform_key_down);
+            else if (cam.mode == OZ_CAMERA_FREEMOVE) (void)oz_camera_update_freemove(&cam, 1.0f/60.0f, oz_platform_key_down);
+
             // Very simple wireframe overlay using oz_render_soft helpers via Cairo surface
             cairo_surface_t* surf = cairo_image_surface_create_for_data(pixels, CAIRO_FORMAT_ARGB32, w, h, stride);
             cairo_t* cr = cairo_create(surf);
@@ -256,6 +279,7 @@ int main(int argc, char** argv) {
     if (!oz_audio_init()) { OZ_WARN("Audio init failed or disabled."); }
 
     // Create a simple map with two brushes, save & load back
+    // Load a sample map if provided via argv; else use default sample
     OzMap map; oz_map_init(&map);
     oz_map_add_box(&map, (OzVec3){0.0f, 0.0f, 0.0f}, (OzVec3){1.0f, 1.0f, 1.0f});
     oz_map_add_cylinder(&map, (OzVec3){1.5f, 0.0f, 0.0f}, 0.5f, 0.5f, 1.0f, 16);
@@ -265,6 +289,17 @@ int main(int argc, char** argv) {
 
     double t0 = oz_platform_time_now_seconds();
     OzCamera cam; oz_camera_init(&cam, OZ_CAMERA_FREEMOVE);
+    // Parse optional --mode fps|freemove|cinematic
+    OzCameraMode mode = OZ_CAMERA_FREEMOVE;
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--mode") == 0 && i + 1 < argc) {
+            const char* m = argv[i+1];
+            if (strcmp(m, "fps") == 0) mode = OZ_CAMERA_FPS;
+            else if (strcmp(m, "freemove") == 0) mode = OZ_CAMERA_FREEMOVE;
+            else if (strcmp(m, "cinematic") == 0) mode = OZ_CAMERA_CINEMATIC;
+        }
+    }
+    cam.mode = mode;
     // Optional: parse --playerstart x,y,z,yaw
     if (argc >= 3 && strcmp(argv[1], "--playerstart") == 0 && argv[2]) {
         double x=0,y=0,z=0,yaw=0; if (sscanf(argv[2], "%lf,%lf,%lf,%lf", &x,&y,&z,&yaw) == 4) {
@@ -282,7 +317,16 @@ int main(int argc, char** argv) {
         float now = (float)oz_platform_time_now_seconds();
         static float last = 0.0f; if (last == 0.0f) last = now;
         float dt = now - last; last = now;
-        oz_camera_update_freemove(&cam, dt, oz_platform_key_down);
+        // Mouse look when active
+        if (oz_platform_is_mouse_look_active()) {
+            float mdx=0.0f, mdy=0.0f; oz_platform_get_relative_mouse_delta(&mdx, &mdy);
+            const float sens_yaw = 0.0025f;   // rad/pixel
+            const float sens_pitch = 0.0020f; // rad/pixel
+            cam.yaw   += mdx * sens_yaw;
+            cam.pitch -= mdy * sens_pitch;
+        }
+        if (cam.mode == OZ_CAMERA_FPS) (void)oz_camera_update_fps(&cam, dt, oz_platform_key_down);
+        else if (cam.mode == OZ_CAMERA_FREEMOVE) (void)oz_camera_update_freemove(&cam, dt, oz_platform_key_down);
 
         oz_platform_clear(0.1f, 0.12f, 0.15f, 1.0f);
         apply_camera(&cam);

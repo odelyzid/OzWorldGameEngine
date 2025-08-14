@@ -16,6 +16,9 @@ static Uint8 s_keys[SDL_NUM_SCANCODES];
 static bool s_software_renderer = false;
 static unsigned char* s_sw_framebuffer = NULL;
 static int s_sw_fb_w = 0, s_sw_fb_h = 0, s_sw_fb_stride = 0;
+// Mouse-look state and relative motion accumulation
+static bool s_mouse_look = false;
+static float s_rel_dx = 0.0f, s_rel_dy = 0.0f;
 
 bool oz_platform_init(const struct OzWindowConfig* config) {
     setvbuf(stdout, NULL, _IONBF, 0);
@@ -146,6 +149,22 @@ bool oz_platform_pump_events(bool* out_should_quit) {
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) {
             if (out_should_quit) *out_should_quit = true;
+        } else if (e.type == SDL_MOUSEMOTION) {
+            if (s_mouse_look) {
+                s_rel_dx += (float)e.motion.xrel;
+                s_rel_dy += (float)e.motion.yrel;
+            }
+        } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+            if (e.button.button == SDL_BUTTON_LEFT) {
+                s_mouse_look = true;
+                SDL_SetRelativeMouseMode(SDL_TRUE);
+                s_rel_dx = s_rel_dy = 0.0f;
+            }
+        } else if (e.type == SDL_KEYDOWN) {
+            if (e.key.keysym.scancode == SDL_SCANCODE_ESCAPE && s_mouse_look) {
+                s_mouse_look = false;
+                SDL_SetRelativeMouseMode(SDL_FALSE);
+            }
         }
     }
     // Get current keyboard state snapshot
@@ -257,6 +276,19 @@ static SDL_Scancode key_to_scancode(enum OzKey key) {
         case OZ_KEY_D: return SDL_SCANCODE_D;
         case OZ_KEY_Q: return SDL_SCANCODE_Q;
         case OZ_KEY_E: return SDL_SCANCODE_E;
+        case OZ_KEY_SPACE: return SDL_SCANCODE_SPACE;
+        case OZ_KEY_L: return SDL_SCANCODE_L;
+        case OZ_KEY_F1: return SDL_SCANCODE_F1;
+        case OZ_KEY_TAB: return SDL_SCANCODE_TAB;
+        case OZ_KEY_ENTER: return SDL_SCANCODE_RETURN;
+        case OZ_KEY_1: return SDL_SCANCODE_1;
+        case OZ_KEY_2: return SDL_SCANCODE_2;
+        case OZ_KEY_3: return SDL_SCANCODE_3;
+        case OZ_KEY_U: return SDL_SCANCODE_U;
+        case OZ_KEY_I: return SDL_SCANCODE_I;
+        case OZ_KEY_O: return SDL_SCANCODE_O;
+        case OZ_KEY_MINUS: return SDL_SCANCODE_MINUS;
+        case OZ_KEY_PLUS: return SDL_SCANCODE_EQUALS;
         case OZ_KEY_LEFT: return SDL_SCANCODE_LEFT;
         case OZ_KEY_RIGHT: return SDL_SCANCODE_RIGHT;
         case OZ_KEY_UP: return SDL_SCANCODE_UP;
@@ -271,6 +303,20 @@ bool oz_platform_key_down(enum OzKey key) {
     if (sc == SDL_SCANCODE_UNKNOWN) return false;
     return s_keys[sc] != 0;
 }
+
+void oz_platform_get_relative_mouse_delta(float* out_dx, float* out_dy) {
+    if (out_dx) *out_dx = s_rel_dx;
+    if (out_dy) *out_dy = s_rel_dy;
+    s_rel_dx = s_rel_dy = 0.0f;
+}
+
+void oz_platform_set_mouse_look_active(bool active) {
+    s_mouse_look = active;
+    SDL_SetRelativeMouseMode(active ? SDL_TRUE : SDL_FALSE);
+    if (active) { s_rel_dx = s_rel_dy = 0.0f; }
+}
+
+bool oz_platform_is_mouse_look_active(void) { return s_mouse_look; }
 
 #else // OZ_HAVE_SDL2
 

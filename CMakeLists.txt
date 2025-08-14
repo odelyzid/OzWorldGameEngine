@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(OzWorld VERSION 0.1.0 LANGUAGES C)
+project(OzWorld VERSION 0.2.0 LANGUAGES C)
 
 # Options
 option(OZ_BUILD_DEMO "Build the SDL2/OpenGL demo" ON)
@@ -153,13 +153,20 @@ if(OZ_BUILD_DEMO AND OZ_HAVE_SDL2)
     src/platform/sdl/oz_platform_sdl_sw.c
   )
   target_include_directories(ozplatform_sdl_sw PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-  target_compile_definitions(ozplatform_sdl_sw PUBLIC OZ_HAVE_SDL2=1)
-  if(TARGET SDL2::SDL2)
-    target_link_libraries(ozplatform_sdl_sw PUBLIC SDL2::SDL2)
-  elseif(TARGET PkgConfig::SDL2)
-    target_link_libraries(ozplatform_sdl_sw PUBLIC PkgConfig::SDL2)
+  # This backend uses raw X11+Cairo only to avoid any GLX calls
+  find_package(X11 REQUIRED)
+  if(PkgConfig_FOUND)
+    pkg_check_modules(CAIRO QUIET IMPORTED_TARGET cairo)
   endif()
-  target_link_libraries(ozplatform_sdl_sw PUBLIC ozcore)
+  target_link_libraries(ozplatform_sdl_sw PUBLIC ozcore X11::X11)
+  if(TARGET PkgConfig::CAIRO)
+    target_link_libraries(ozplatform_sdl_sw PUBLIC PkgConfig::CAIRO)
+  else()
+    find_package(Cairo REQUIRED)
+    if(TARGET Cairo::Cairo)
+      target_link_libraries(ozplatform_sdl_sw PUBLIC Cairo::Cairo)
+    endif()
+  endif()
 endif()
 
 # Demo app
@@ -194,6 +201,7 @@ endif()
 if(OZ_BUILD_DEMO AND OZ_HAVE_SDL2)
   add_executable(oz_demo_sw
     apps/oz_demo/main_sw.c
+    src/editor/oz_editor.c
     src/render/oz_render_soft.c
   )
   target_link_libraries(oz_demo_sw PRIVATE ozcore ozplatform_sdl_sw)

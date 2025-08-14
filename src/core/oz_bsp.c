@@ -5,6 +5,10 @@
 #include <string.h>
 #include <math.h>
 
+void oz_world_props_default(OzWorldProps* p) {
+    if (!p) return; p->ambient_rgb[0]=0.15f; p->ambient_rgb[1]=0.15f; p->ambient_rgb[2]=0.18f; p->gravity_z = -9.8f;
+}
+
 static bool oz_map_reserve(OzMap* map, size_t new_capacity) {
     if (new_capacity <= map->capacity) return true;
     size_t capacity = map->capacity ? map->capacity : 4;
@@ -87,6 +91,13 @@ OzBrush* oz_map_add_plane(OzMap* map, OzVec3 center, OzVec3 normal, float half_e
     b->type = OZ_BRUSH_PLANE;
     b->as.plane.center = center; b->as.plane.normal = normal; b->as.plane.half_extent = half_extent;
     return b;
+}
+
+bool oz_map_append_brush(OzMap* map, const OzBrush* brush) {
+    if (!map || !brush) return false;
+    if (!oz_map_reserve(map, map->count + 1)) return false;
+    map->brushes[map->count++] = *brush;
+    return true;
 }
 
 bool oz_map_save_text(const char* path, const OzMap* map) {

@@ -33,6 +33,9 @@ void oz_camera_set_angles(OzCamera* cam, float yaw, float pitch, float roll);
 // Returns instantaneous speed magnitude (units/sec) for debugging
 float oz_camera_update_freemove(OzCamera* cam, float dt_seconds,
                                 bool (*key_down)(enum OzKey key));
+// FPS mode: gravity and jump (space), no vertical Q/E movement
+float oz_camera_update_fps(OzCamera* cam, float dt_seconds,
+                           bool (*key_down)(enum OzKey key));
 
 #ifdef __cplusplus
 }

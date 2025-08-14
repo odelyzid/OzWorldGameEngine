@@ -40,6 +40,14 @@ bool oz_platform_is_software_renderer(void);
 // - stride: bytes per row
 void oz_platform_present_software_rgba32(const unsigned char* pixels, int width, int height, int stride);
 
+// Input helpers
+// Returns accumulated relative mouse motion since last call (in pixels).
+// Positive dx moves mouse to the right, positive dy moves mouse down.
+void oz_platform_get_relative_mouse_delta(float* out_dx, float* out_dy);
+// Enable/disable mouse-look mode (platform may hide cursor or grab pointer).
+void oz_platform_set_mouse_look_active(bool active);
+bool oz_platform_is_mouse_look_active(void);
+
 // Minimal key input API for demo/editor controls
 typedef enum OzKey {
     OZ_KEY_W,
@@ -52,7 +60,21 @@ typedef enum OzKey {
     OZ_KEY_RIGHT,
     OZ_KEY_UP,
     OZ_KEY_DOWN,
+    OZ_KEY_SPACE,
+    OZ_KEY_L,
     OZ_KEY_ESCAPE,
+    // Extended editor/demo keys
+    OZ_KEY_F1,
+    OZ_KEY_TAB,
+    OZ_KEY_ENTER,
+    OZ_KEY_1,
+    OZ_KEY_2,
+    OZ_KEY_3,
+    OZ_KEY_U,
+    OZ_KEY_I,
+    OZ_KEY_O,
+    OZ_KEY_MINUS,
+    OZ_KEY_PLUS,
 } OzKey;
 
 bool oz_platform_key_down(enum OzKey key);

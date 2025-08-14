@@ -69,6 +69,17 @@ typedef struct OzMap {
     size_t capacity;
 } OzMap;
 
+// Simple editor/world properties (kept minimal and optional)
+typedef struct OzWorldProps {
+    float ambient_rgb[3];
+    float gravity_z; // negative downwards
+} OzWorldProps;
+
+void oz_world_props_default(OzWorldProps* p);
+
+// Append a brush to the map (copies contents). Returns true on success.
+bool oz_map_append_brush(OzMap* map, const OzBrush* brush);
+
 void oz_map_init(OzMap* map);
 void oz_map_free(OzMap* map);
 
