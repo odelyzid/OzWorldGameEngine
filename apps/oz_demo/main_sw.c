@@ -20,6 +20,11 @@ int main(int argc, char** argv) {
     if (!oz_platform_init(&cfg)) { OZ_ERROR("Platform init failed"); return 1; }
 
     OzCamera cam; oz_camera_init(&cam, OZ_CAMERA_FREEMOVE);
+    // Initialize shared lights
+    oz_lights_clear(); oz_lights_set_ambient(0.15f,0.15f,0.18f);
+    (void)oz_lights_add_point(2.0f, 2.0f, 3.0f, 1.0f, 0.95f, 0.9f, 2.0f, 8.0f);
+    (void)oz_lights_add_spot(-2.0f, -2.0f, 3.0f, 0.6f,0.6f,-1.0f, 25.0f, 3.0f, 0.7f,0.8f,1.0f, 1.6f, 10.0f);
+    (void)oz_lights_add_wave(0.0f, 0.0f, 2.0f, 0.3f,0.5f,1.0f, 1.2f, 12.0f, 0.5f, 0.35f, 0.0f);
     // Parse optional --mode fps|freemove|cinematic
     OzCameraMode mode = OZ_CAMERA_FREEMOVE;
     for (int i = 1; i < argc; ++i) {
@@ -51,6 +56,14 @@ int main(int argc, char** argv) {
     // Simple editor UI state
     bool show_menu = true; // F1 toggles
     int menu_index = 0;    // 0: CSG/Brushes, 1: World
+    // Mouse sensitivity (radians per pixel). Allow override via env OZ_MOUSE_SENS
+    float mouse_sens_yaw = 0.0008f;
+    float mouse_sens_pitch = 0.0007f;
+    {
+        const char* senv = getenv("OZ_MOUSE_SENS");
+        if (senv && senv[0]) { float s=(float)atof(senv); if (s>0.0f && s<0.05f){ mouse_sens_yaw=s; mouse_sens_pitch=s*0.875f; } }
+    }
+
     while (!quit) {
         if (!oz_platform_pump_events(&quit)) break;
         double now = oz_platform_time_now_seconds();
@@ -58,14 +71,17 @@ int main(int argc, char** argv) {
         // Mouse look: hold left mouse to rotate
         if (oz_platform_is_mouse_look_active()) {
             float mdx=0.0f, mdy=0.0f; oz_platform_get_relative_mouse_delta(&mdx, &mdy);
-            const float sens_yaw = 0.0025f;   // rad/pixel
-            const float sens_pitch = 0.0020f; // rad/pixel
-            cam.yaw   += mdx * sens_yaw;
-            cam.pitch -= mdy * sens_pitch;
+            cam.yaw   += mdx * mouse_sens_yaw;
+            cam.pitch -= mdy * mouse_sens_pitch;
+            const float kMaxPitch = 1.55334306f;
+            if (cam.pitch > kMaxPitch) cam.pitch = kMaxPitch;
+            if (cam.pitch < -kMaxPitch) cam.pitch = -kMaxPitch;
         }
         // Toggle unlit/lit with L key (edge detect)
         static bool last_l = false; bool l_now = oz_platform_key_down(OZ_KEY_L);
         if (l_now && !last_l) unlit = !unlit; last_l = l_now;
+        // Apply ambient according to unlit toggle
+        if (unlit) oz_lights_set_ambient(0.7f,0.7f,0.75f); else oz_lights_set_ambient(0.15f,0.15f,0.18f);
         // Update camera per mode using platform key state
         if (cam.mode == OZ_CAMERA_FPS) (void)oz_camera_update_fps(&cam, dt, oz_platform_key_down);
         else if (cam.mode == OZ_CAMERA_FREEMOVE) (void)oz_camera_update_freemove(&cam, dt, oz_platform_key_down);
@@ -87,6 +103,7 @@ int main(int argc, char** argv) {
         }
         cairo_surface_t* surf = cairo_image_surface_create_for_data(pixels, CAIRO_FORMAT_ARGB32, w, h, stride);
         cairo_t* cr = cairo_create(surf);
+        oz_lights_set_time_seconds((float)now);
         oz_render_soft_draw_grid_axes(cr, w, h, &cam, true, true);
         oz_render_soft_draw_map(cr, w, h, &map, &cam, -1);
         // Example: draw a lit quad placeholder near origin (pre-projected call interface kept minimal)

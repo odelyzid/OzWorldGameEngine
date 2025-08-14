@@ -5,6 +5,9 @@
 #include "oz/oz_bsp.h"
 #include "oz/oz_camera.h"
 
+// Forward declaration to avoid circular includes
+typedef struct OzGLModern OzGLModern;
+
 typedef struct EditorUi {
     GtkWidget* window;
     GtkWidget* menubar;
@@ -15,9 +18,10 @@ typedef struct EditorUi {
     GtkWidget* overlay;  // overlay container for HUD
     GtkWidget* info_label; // top-right debug info
     // GL resources (editor-local)
-    unsigned int gl_tex_brush; // 0 if not created
+    unsigned int gl_tex_brush; // 0 if not created (legacy immediate mode)
     int gl_tex_w;
     int gl_tex_h;
+    OzGLModern* modern_renderer; // NULL if using immediate mode or software
     gboolean shutting_down;
     unsigned int tick_id;
     unsigned int redraw_id; // for software viewport redraw timer

@@ -7,7 +7,7 @@ void oz_camera_init(OzCamera* cam, OzCameraMode mode) {
     cam->yaw = 0.0f;
     cam->pitch = 0.088f;
     cam->roll = 0.0f;
-    cam->moveSpeed = 3.0f;   // units/sec
+    cam->moveSpeed = 2.0f;   // units/sec
     cam->turnSpeed = 1.5f;   // rad/sec
 }
 

@@ -289,6 +289,11 @@ int main(int argc, char** argv) {
 
     double t0 = oz_platform_time_now_seconds();
     OzCamera cam; oz_camera_init(&cam, OZ_CAMERA_FREEMOVE);
+    // Initialize lights (shared path). Ambient can be tweaked later from editor.
+    oz_lights_clear(); oz_lights_set_ambient(0.15f,0.15f,0.18f);
+    (void)oz_lights_add_point(2.0f, 2.0f, 3.0f, 1.0f, 0.95f, 0.9f, 2.0f, 8.0f);
+    (void)oz_lights_add_spot(-2.0f, -2.0f, 3.0f, 0.6f,0.6f,-1.0f, 25.0f, 3.0f, 0.7f,0.8f,1.0f, 1.6f, 10.0f);
+    (void)oz_lights_add_wave(0.0f, 0.0f, 2.0f, 0.3f,0.5f,1.0f, 1.2f, 12.0f, 0.5f, 0.35f, 0.0f);
     // Parse optional --mode fps|freemove|cinematic
     OzCameraMode mode = OZ_CAMERA_FREEMOVE;
     for (int i = 1; i < argc; ++i) {
@@ -308,8 +313,20 @@ int main(int argc, char** argv) {
         }
     }
     bool quit = false;
+    bool unlit = false; // toggle with L
     // Attempt to play background music if present
     (void)oz_audio_play_music("music.ozmux", -1);
+
+    // Mouse sensitivity (radians per pixel). Allow override via env OZ_MOUSE_SENS
+    float mouse_sens_yaw = 0.0008f;
+    float mouse_sens_pitch = 0.0007f;
+    {
+        const char* senv = getenv("OZ_MOUSE_SENS");
+        if (senv && senv[0]) {
+            float s = (float)atof(senv);
+            if (s > 0.0f && s < 0.05f) { mouse_sens_yaw = s; mouse_sens_pitch = s * 0.875f; }
+        }
+    }
 
     while (!quit) {
         if (!oz_platform_pump_events(&quit)) break;
@@ -320,16 +337,23 @@ int main(int argc, char** argv) {
         // Mouse look when active
         if (oz_platform_is_mouse_look_active()) {
             float mdx=0.0f, mdy=0.0f; oz_platform_get_relative_mouse_delta(&mdx, &mdy);
-            const float sens_yaw = 0.0025f;   // rad/pixel
-            const float sens_pitch = 0.0020f; // rad/pixel
-            cam.yaw   += mdx * sens_yaw;
-            cam.pitch -= mdy * sens_pitch;
+            cam.yaw   += mdx * mouse_sens_yaw;
+            cam.pitch -= mdy * mouse_sens_pitch;
+            // Clamp pitch to avoid flipping
+            const float kMaxPitch = 1.55334306f; // ~89 degrees
+            if (cam.pitch > kMaxPitch) cam.pitch = kMaxPitch;
+            if (cam.pitch < -kMaxPitch) cam.pitch = -kMaxPitch;
         }
         if (cam.mode == OZ_CAMERA_FPS) (void)oz_camera_update_fps(&cam, dt, oz_platform_key_down);
         else if (cam.mode == OZ_CAMERA_FREEMOVE) (void)oz_camera_update_freemove(&cam, dt, oz_platform_key_down);
+        // Lighting toggle: 'L'
+        static bool last_l = false; bool l_now = oz_platform_key_down(OZ_KEY_L);
+        if (l_now && !last_l) unlit = !unlit; last_l = l_now;
+        if (unlit) oz_lights_set_ambient(0.7f,0.7f,0.75f); else oz_lights_set_ambient(0.15f,0.15f,0.18f);
 
         oz_platform_clear(0.1f, 0.12f, 0.15f, 1.0f);
         apply_camera(&cam);
+        oz_lights_set_time_seconds(now);
         oz_render_gl_draw_map_filled(&loaded);
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3f(0,0,0);

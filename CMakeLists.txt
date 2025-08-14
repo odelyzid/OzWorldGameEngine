@@ -78,10 +78,18 @@ set(OZ_HAVE_OPENGL OFF)
 set(OZ_HAVE_GTK3 OFF)
 set(OZ_HAVE_SDL_MIXER OFF)
 
-# OpenGL
+# OpenGL and GLEW
 find_package(OpenGL QUIET)
 if(OpenGL_FOUND)
   set(OZ_HAVE_OPENGL ON)
+endif()
+
+# Try to find GLEW via pkg-config (more reliable on Ubuntu)
+if(PkgConfig_FOUND)
+  pkg_check_modules(GLEW QUIET IMPORTED_TARGET glew)
+  if(TARGET PkgConfig::GLEW)
+    set(OZ_HAVE_GLEW ON)
+  endif()
 endif()
 
 # SDL2 (prefer pkg-config when cross-compiling to Windows)
@@ -224,12 +232,19 @@ endif()
 # Editor (GTK3)
 if(OZ_BUILD_EDITOR AND OZ_HAVE_GTK3)
   add_executable(oz_editor
-    src/editor/app.c
-    src/editor/input.c
-    src/editor/ui/ui.c
-    editor/main.c
-    src/render/oz_render_soft.c
-    src/render/oz_render_gl.c
+    # New modular architecture main
+    apps/oz_editor_modular/main.c
+    src/editor/modules/editor_main.c
+    src/editor/modules/ui/ui_core.c
+    src/editor/modules/ui/ui_menus.c
+    src/editor/modules/ui/ui_dialogs.c
+    src/editor/modules/ui/ui_viewport.c
+    src/editor/modules/scene/scene_core.c
+    src/editor/modules/input/input_core.c
+    src/editor/modules/rendering/rendering_core.c
+    
+    # Keep modern renderer
+    src/render/oz_gl_modern.c
   )
   if(TARGET PkgConfig::GTK3)
     target_link_libraries(oz_editor PRIVATE PkgConfig::GTK3)
@@ -239,6 +254,16 @@ if(OZ_BUILD_EDITOR AND OZ_HAVE_GTK3)
   target_link_libraries(oz_editor PRIVATE ozcore)
   if(OpenGL_FOUND)
     target_link_libraries(oz_editor PRIVATE OpenGL::GL)
+  endif()
+  if(OZ_HAVE_GLEW)
+    target_link_libraries(oz_editor PRIVATE PkgConfig::GLEW)
+  endif()
+  # Link Cairo for software rendering
+  if(PkgConfig_FOUND)
+    pkg_check_modules(CAIRO QUIET IMPORTED_TARGET cairo)
+    if(TARGET PkgConfig::CAIRO)
+      target_link_libraries(oz_editor PRIVATE PkgConfig::CAIRO)
+    endif()
   endif()
   if(UNIX)
     target_link_libraries(oz_editor PRIVATE m)

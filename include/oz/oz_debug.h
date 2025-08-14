@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,15 +39,22 @@ static inline void oz_debug_hexdump(const char* label, const void* data, size_t 
     char line[128];
     for (size_t i = 0; i < len; i += 16) {
         size_t n = (len - i) < 16 ? (len - i) : 16;
-        int o = snprintf(line, sizeof(line), "%08zx  ", i);
+        size_t o = 0;
+        int r = snprintf(line, sizeof(line), "%08zx  ", i);
+        if (r < 0) r = 0; o = (size_t)r;
         for (size_t j = 0; j < 16; ++j) {
-            if (j < n) o += snprintf(line+o, sizeof(line)-o, "%02x ", p[i+j]);
-            else o += snprintf(line+o, sizeof(line)-o, "   ");
-            if (j == 7) o += snprintf(line+o, sizeof(line)-o, " ");
+            if (j < n) r = snprintf(line + o, sizeof(line) - o, "%02x ", p[i + j]);
+            else r = snprintf(line + o, sizeof(line) - o, "   ");
+            if (r < 0) r = 0; o += (size_t)r;
+            if (j == 7) { r = snprintf(line + o, sizeof(line) - o, " "); if (r < 0) r = 0; o += (size_t)r; }
         }
-        o += snprintf(line+o, sizeof(line)-o, " |");
-        for (size_t j = 0; j < n; ++j) { unsigned char c = p[i+j]; line[o++] = (c >= 32 && c < 127) ? (char)c : '.'; }
-        line[o++] = '|'; line[o] = '\0';
+        r = snprintf(line + o, sizeof(line) - o, " |"); if (r < 0) r = 0; o += (size_t)r;
+        for (size_t j = 0; j < n && o + 1 < sizeof(line); ++j) {
+            unsigned char c = p[i + j];
+            line[o++] = (c >= 32 && c < 127) ? (char)c : '.';
+        }
+        if (o < sizeof(line)) line[o++] = '|';
+        if (o < sizeof(line)) line[o] = '\0'; else line[sizeof(line) - 1] = '\0';
         OZ_DEBUG("%s", line);
     }
 }

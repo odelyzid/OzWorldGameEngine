@@ -209,7 +209,12 @@ void oz_render_soft_draw_map(cairo_t* cr, int w, int h, const OzMap* map, const 
                 cairo_move_to(cr, sx, sy);
                 for (int vi = 1; vi < pn; ++vi) { project_point_camera(poly_out[vi][0], poly_out[vi][1], poly_out[vi][2], w, h, &sx, &sy); cairo_line_to(cr, sx, sy); }
                 cairo_close_path(cr);
-                cairo_set_source_rgba(cr, 0.7, 0.75, 0.8, 0.30);
+                // Lit fill based on shared light evaluation at face center
+                float world_center[3] = {0,0,0};
+                for (int vi = 0; vi < 4; ++vi) { int idx = faces[f][vi]; world_center[0]+=v[idx][0]; world_center[1]+=v[idx][1]; world_center[2]+=v[idx][2]; }
+                world_center[0]*=0.25f; world_center[1]*=0.25f; world_center[2]*=0.25f;
+                float rgb[3]; oz_lights_evaluate_at(world_center, (float[3]){nx,ny,nz}, rgb);
+                cairo_set_source_rgba(cr, rgb[0], rgb[1], rgb[2], 0.30);
                 cairo_fill_preserve(cr);
                 if ((int)brush_index == selected_index) cairo_set_source_rgba(cr, 1.0, 0.2, 0.2, 0.9);
                 else cairo_set_source_rgba(cr, 0.9, 0.9, 0.95, 0.9);
@@ -267,7 +272,24 @@ void oz_render_soft_draw_map(cairo_t* cr, int w, int h, const OzMap* map, const 
                 cairo_move_to(cr, sx, sy);
                 for (int k = 1; k < polys[qi].n; ++k) { project_point_camera(polys[qi].cpts[k][0], polys[qi].cpts[k][1], polys[qi].cpts[k][2], w, h, &sx, &sy); cairo_line_to(cr, sx, sy); }
                 cairo_close_path(cr);
-                cairo_set_source_rgba(cr, 0.7, 0.75, 0.8, 0.22);
+                // Approximate normal for cylinder strip (use cross of edges 0->1 and 0->last)
+                float e1x = polys[qi].cpts[1][0] - polys[qi].cpts[0][0];
+                float e1y = polys[qi].cpts[1][1] - polys[qi].cpts[0][1];
+                float e1z = polys[qi].cpts[1][2] - polys[qi].cpts[0][2];
+                float e2x = polys[qi].cpts[polys[qi].n-1][0] - polys[qi].cpts[0][0];
+                float e2y = polys[qi].cpts[polys[qi].n-1][1] - polys[qi].cpts[0][1];
+                float e2z = polys[qi].cpts[polys[qi].n-1][2] - polys[qi].cpts[0][2];
+                float nx = e1y*e2z - e1z*e2y;
+                float ny = e1z*e2x - e1x*e2z;
+                float nz = e1x*e2y - e1y*e2x;
+                // Use world-space center approximation by transforming camera center back via inverse of world_to_camera translation-only (camera rotation ignored for lighting simplicity)
+                float world_center[3] = {0,0,0};
+                for (int k = 0; k < polys[qi].n; ++k) { world_center[0]+=polys[qi].cpts[k][0]; world_center[1]+=polys[qi].cpts[k][1]; world_center[2]+=polys[qi].cpts[k][2]; }
+                world_center[0]/=polys[qi].n; world_center[1]/=polys[qi].n; world_center[2]/=polys[qi].n;
+                // Project back approximation: add camera position (camera rotation is already applied; this is a simplification for editor preview)
+                if (cam) { world_center[0]+=cam->position.x; world_center[1]+=cam->position.y; world_center[2]+=cam->position.z; }
+                float rgb[3]; oz_lights_evaluate_at(world_center, (float[3]){nx,ny,nz}, rgb);
+                cairo_set_source_rgba(cr, rgb[0], rgb[1], rgb[2], 0.22);
                 cairo_fill_preserve(cr);
                 cairo_set_source_rgba(cr, 0.9, 0.9, 0.95, 0.9);
                 cairo_stroke(cr);
