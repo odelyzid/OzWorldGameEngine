@@ -1,0 +1,9 @@
+/home/delyzid/projects/c/OzWorld/build/CMakeFiles/ozcore.dir
+/home/delyzid/projects/c/OzWorld/build/CMakeFiles/ozplatform_sdl_gl.dir
+/home/delyzid/projects/c/OzWorld/build/CMakeFiles/ozplatform_sdl_sw.dir
+/home/delyzid/projects/c/OzWorld/build/CMakeFiles/oz_demo.dir
+/home/delyzid/projects/c/OzWorld/build/CMakeFiles/oz_demo_sw.dir
+/home/delyzid/projects/c/OzWorld/build/CMakeFiles/oz_editor.dir
+/home/delyzid/projects/c/OzWorld/build/CMakeFiles/oz_server.dir
+/home/delyzid/projects/c/OzWorld/build/CMakeFiles/edit_cache.dir
+/home/delyzid/projects/c/OzWorld/build/CMakeFiles/rebuild_cache.dir

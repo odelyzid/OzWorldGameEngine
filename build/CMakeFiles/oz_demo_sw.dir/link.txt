@@ -1,0 +1,1 @@
+/usr/bin/cc -O2 -g -DNDEBUG CMakeFiles/oz_demo_sw.dir/apps/oz_demo/main_sw.c.o CMakeFiles/oz_demo_sw.dir/src/editor/oz_editor.c.o CMakeFiles/oz_demo_sw.dir/src/render/oz_render_soft.c.o -o oz_demo_sw  libozcore.a libozplatform_sdl_sw.a -lm libozcore.a -lm /usr/lib/x86_64-linux-gnu/libcairo.so /usr/lib/x86_64-linux-gnu/libX11.so 

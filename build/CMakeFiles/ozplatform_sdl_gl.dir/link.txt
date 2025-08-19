@@ -1,0 +1,2 @@
+/usr/bin/ar qc libozplatform_sdl.a CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o
+/usr/bin/ranlib libozplatform_sdl.a
