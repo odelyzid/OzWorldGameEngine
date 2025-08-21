@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/delyzid/projects/c/OzWorld
+CMAKE_SOURCE_DIR = /home/delyzid/projects/c/OzWorld/OzWorldEngine
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/delyzid/projects/c/OzWorld/build
+CMAKE_BINARY_DIR = /home/delyzid/projects/c/OzWorld/OzWorldEngine/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/oz_demo.dir/depend.make
@@ -72,44 +72,44 @@ include CMakeFiles/oz_demo.dir/flags.make
 CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o: CMakeFiles/oz_demo.dir/flags.make
 CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o: ../apps/oz_demo/main.c
 CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o: CMakeFiles/oz_demo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o -MF CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o.d -o CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o -c /home/delyzid/projects/c/OzWorld/apps/oz_demo/main.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o -MF CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o.d -o CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/apps/oz_demo/main.c
 
 CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/apps/oz_demo/main.c > CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/apps/oz_demo/main.c > CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.i
 
 CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/apps/oz_demo/main.c -o CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/apps/oz_demo/main.c -o CMakeFiles/oz_demo.dir/apps/oz_demo/main.c.s
 
 CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o: CMakeFiles/oz_demo.dir/flags.make
 CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o: ../src/render/oz_render_gl.c
 CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o: CMakeFiles/oz_demo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o -MF CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o.d -o CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o -c /home/delyzid/projects/c/OzWorld/src/render/oz_render_gl.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o -MF CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o.d -o CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/render/oz_render_gl.c
 
 CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/render/oz_render_gl.c > CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/render/oz_render_gl.c > CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.i
 
 CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/render/oz_render_gl.c -o CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/render/oz_render_gl.c -o CMakeFiles/oz_demo.dir/src/render/oz_render_gl.c.s
 
 CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o: CMakeFiles/oz_demo.dir/flags.make
 CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o: ../src/render/oz_render_soft.c
 CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o: CMakeFiles/oz_demo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o -MF CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o.d -o CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o -c /home/delyzid/projects/c/OzWorld/src/render/oz_render_soft.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o -MF CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o.d -o CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/render/oz_render_soft.c
 
 CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/render/oz_render_soft.c > CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/render/oz_render_soft.c > CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.i
 
 CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/render/oz_render_soft.c -o CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/render/oz_render_soft.c -o CMakeFiles/oz_demo.dir/src/render/oz_render_soft.c.s
 
 # Object files for target oz_demo
 oz_demo_OBJECTS = \
@@ -131,7 +131,7 @@ oz_demo: /usr/lib/x86_64-linux-gnu/libGLX.so
 oz_demo: /usr/lib/x86_64-linux-gnu/libOpenGL.so
 oz_demo: /usr/lib/x86_64-linux-gnu/libcairo.so
 oz_demo: CMakeFiles/oz_demo.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking C executable oz_demo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking C executable oz_demo"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/oz_demo.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -143,6 +143,6 @@ CMakeFiles/oz_demo.dir/clean:
 .PHONY : CMakeFiles/oz_demo.dir/clean
 
 CMakeFiles/oz_demo.dir/depend:
-	cd /home/delyzid/projects/c/OzWorld/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/delyzid/projects/c/OzWorld /home/delyzid/projects/c/OzWorld /home/delyzid/projects/c/OzWorld/build /home/delyzid/projects/c/OzWorld/build /home/delyzid/projects/c/OzWorld/build/CMakeFiles/oz_demo.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/delyzid/projects/c/OzWorld/OzWorldEngine/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/delyzid/projects/c/OzWorld/OzWorldEngine /home/delyzid/projects/c/OzWorld/OzWorldEngine /home/delyzid/projects/c/OzWorld/OzWorldEngine/build /home/delyzid/projects/c/OzWorld/OzWorldEngine/build /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles/oz_demo.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/oz_demo.dir/depend
 

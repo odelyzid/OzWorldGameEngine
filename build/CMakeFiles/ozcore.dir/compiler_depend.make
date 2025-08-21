@@ -49,11 +49,12 @@ CMakeFiles/ozcore.dir/src/core/oz_audio_sdlmixer.c.o: ../src/core/oz_audio_sdlmi
 
 CMakeFiles/ozcore.dir/src/core/oz_bsp.c.o: ../src/core/oz_bsp.c \
   /usr/include/stdc-predef.h \
-  ../include/oz/oz_bsp.h \
+  ../include/oz/render/oz_bsp.h \
+  ../include/oz/oz_math.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/float.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h \
-  ../include/oz/oz_math.h \
-  /usr/include/stdio.h \
+  /usr/include/math.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
   /usr/include/features.h \
   /usr/include/features-time64.h \
@@ -63,10 +64,20 @@ CMakeFiles/ozcore.dir/src/core/oz_bsp.c.o: ../src/core/oz_bsp.c \
   /usr/include/x86_64-linux-gnu/bits/long-double.h \
   /usr/include/x86_64-linux-gnu/gnu/stubs.h \
   /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdarg.h \
   /usr/include/x86_64-linux-gnu/bits/types.h \
   /usr/include/x86_64-linux-gnu/bits/typesizes.h \
   /usr/include/x86_64-linux-gnu/bits/time64.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/stdio.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdarg.h \
   /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
@@ -74,8 +85,6 @@ CMakeFiles/ozcore.dir/src/core/oz_bsp.c.o: ../src/core/oz_bsp.c \
   /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
   /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
   /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
-  /usr/include/x86_64-linux-gnu/bits/floatn.h \
-  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
   /usr/include/x86_64-linux-gnu/bits/stdio.h \
   /usr/include/x86_64-linux-gnu/bits/stdio2.h \
   /usr/include/stdlib.h \
@@ -83,15 +92,7 @@ CMakeFiles/ozcore.dir/src/core/oz_bsp.c.o: ../src/core/oz_bsp.c \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib.h \
   /usr/include/string.h \
-  /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
-  /usr/include/math.h \
-  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
-  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
-  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls.h
+  /usr/include/x86_64-linux-gnu/bits/string_fortified.h
 
 CMakeFiles/ozcore.dir/src/core/oz_bundle.c.o: ../src/core/oz_bundle.c \
   /usr/include/stdc-predef.h \
@@ -132,10 +133,11 @@ CMakeFiles/ozcore.dir/src/core/oz_bundle.c.o: ../src/core/oz_bundle.c \
 
 CMakeFiles/ozcore.dir/src/core/oz_camera.c.o: ../src/core/oz_camera.c \
   /usr/include/stdc-predef.h \
-  ../include/oz/oz_camera.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
+  ../include/oz/render/oz_camera.h \
   ../include/oz/oz_math.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/float.h \
   ../include/oz/oz_platform.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
   /usr/include/math.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
   /usr/include/features.h \
@@ -191,6 +193,7 @@ CMakeFiles/ozcore.dir/src/core/oz_core.c.o: ../src/core/oz_core.c \
   /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
   /usr/include/x86_64-linux-gnu/bits/stdio.h \
   /usr/include/x86_64-linux-gnu/bits/stdio2.h \
+  ../include/oz/oz_log.h \
   /usr/include/stdlib.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
@@ -217,11 +220,9 @@ CMakeFiles/ozcore.dir/src/core/oz_core.c.o: ../src/core/oz_core.c \
 CMakeFiles/ozcore.dir/src/core/oz_debug.c.o: ../src/core/oz_debug.c \
   /usr/include/stdc-predef.h \
   ../include/oz/oz_debug.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
-  ../include/oz/oz_log.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdarg.h \
-  /usr/include/string.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h \
+  /usr/include/stdio.h \
   /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
   /usr/include/features.h \
   /usr/include/features-time64.h \
@@ -231,10 +232,25 @@ CMakeFiles/ozcore.dir/src/core/oz_debug.c.o: ../src/core/oz_debug.c \
   /usr/include/x86_64-linux-gnu/bits/long-double.h \
   /usr/include/x86_64-linux-gnu/gnu/stubs.h \
   /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
-  /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
-  /usr/include/stdlib.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdarg.h \
+  /usr/include/x86_64-linux-gnu/bits/types.h \
+  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+  /usr/include/x86_64-linux-gnu/bits/time64.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
   /usr/include/x86_64-linux-gnu/bits/floatn.h \
   /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
+  /usr/include/x86_64-linux-gnu/bits/stdio.h \
+  /usr/include/x86_64-linux-gnu/bits/stdio2.h \
+  ../include/oz/oz_log.h \
+  /usr/include/string.h \
+  /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
+  /usr/include/stdlib.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-bsearch.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib.h
@@ -282,8 +298,6 @@ CMakeFiles/ozcore.dir/src/core/oz_log.c.o: ../src/core/oz_log.c \
   /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
   /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
-  /usr/include/string.h \
-  /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
   /usr/include/unistd.h \
   /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
   /usr/include/x86_64-linux-gnu/bits/environments.h \
@@ -330,49 +344,6 @@ CMakeFiles/ozcore.dir/src/core/oz_tex.c.o: ../src/core/oz_tex.c \
   /usr/include/string.h \
   /usr/include/x86_64-linux-gnu/bits/string_fortified.h
 
-CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_common.c \
-  /usr/include/stdc-predef.h \
-  ../include/oz/oz_camera.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h \
-  ../include/oz/oz_math.h \
-  ../include/oz/oz_platform.h \
-  ../include/oz/oz_render.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h \
-  /usr/include/cairo/cairo.h \
-  /usr/include/cairo/cairo-version.h \
-  /usr/include/cairo/cairo-features.h \
-  /usr/include/cairo/cairo-deprecated.h \
-  /usr/include/math.h \
-  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
-  /usr/include/features.h \
-  /usr/include/features-time64.h \
-  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
-  /usr/include/x86_64-linux-gnu/bits/timesize.h \
-  /usr/include/x86_64-linux-gnu/sys/cdefs.h \
-  /usr/include/x86_64-linux-gnu/bits/long-double.h \
-  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
-  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
-  /usr/include/x86_64-linux-gnu/bits/types.h \
-  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
-  /usr/include/x86_64-linux-gnu/bits/time64.h \
-  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
-  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
-  /usr/include/x86_64-linux-gnu/bits/floatn.h \
-  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
-  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
-  /usr/include/string.h \
-  /usr/include/x86_64-linux-gnu/bits/string_fortified.h
-
-
-/usr/include/cairo/cairo-deprecated.h:
-
-/usr/include/cairo/cairo-features.h:
-
-/usr/include/cairo/cairo-version.h:
 
 ../include/oz/oz_tex.h:
 
@@ -386,13 +357,13 @@ CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_c
 
 /usr/include/x86_64-linux-gnu/bits/waitstatus.h:
 
+/usr/include/x86_64-linux-gnu/sys/wait.h:
+
 /usr/include/x86_64-linux-gnu/bits/unistd_ext.h:
 
 /usr/include/x86_64-linux-gnu/bits/unistd.h:
 
 /usr/include/x86_64-linux-gnu/bits/confname.h:
-
-../src/render/oz_render_common.c:
 
 /usr/include/x86_64-linux-gnu/bits/posix_opt.h:
 
@@ -414,6 +385,8 @@ CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_c
 
 ../include/oz/oz_debug.h:
 
+../include/oz/oz_core.h:
+
 /usr/include/x86_64-linux-gnu/sys/cdefs.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdio2.h:
@@ -432,9 +405,9 @@ CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_c
 
 /usr/include/x86_64-linux-gnu/bits/typesizes.h:
 
-/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
-
 /usr/include/math.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h:
 
 /usr/include/x86_64-linux-gnu/bits/errno.h:
 
@@ -472,12 +445,6 @@ CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_c
 
 /usr/include/x86_64-linux-gnu/bits/libc-header-start.h:
 
-../src/core/oz_debug.c:
-
-/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdlib.h:
-
 /usr/include/x86_64-linux-gnu/gnu/stubs.h:
 
 /usr/include/x86_64-linux-gnu/bits/types.h:
@@ -502,8 +469,6 @@ CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_c
 
 /usr/lib/gcc/x86_64-linux-gnu/11/include/stdbool.h:
 
-../include/oz/oz_camera.h:
-
 /usr/include/x86_64-linux-gnu/bits/time64.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
@@ -512,11 +477,7 @@ CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_c
 
 ../include/oz/oz_audio.h:
 
-/usr/include/x86_64-linux-gnu/sys/wait.h:
-
-../include/oz/oz_bsp.h:
-
-../include/oz/oz_core.h:
+../include/oz/render/oz_bsp.h:
 
 ../include/oz/oz_assets.h:
 
@@ -524,27 +485,9 @@ CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_c
 
 ../include/oz/oz_math.h:
 
-/usr/include/x86_64-linux-gnu/bits/getopt_posix.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
-
-/usr/include/stdio.h:
-
-/usr/include/cairo/cairo.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/FILE.h:
-
-/usr/include/x86_64-linux-gnu/bits/stdio.h:
+/usr/lib/gcc/x86_64-linux-gnu/11/include/float.h:
 
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
-
-../include/oz/oz_render.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:
 
@@ -560,6 +503,22 @@ CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_c
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
 
+/usr/include/x86_64-linux-gnu/bits/getopt_posix.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
+
+/usr/include/stdio.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/clock_t.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/__FILE.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/FILE.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdio.h:
+
 ../include/oz/oz_bundle.h:
 
 ../src/core/oz_log.c:
@@ -567,5 +526,13 @@ CMakeFiles/ozcore.dir/src/render/oz_render_common.c.o: ../src/render/oz_render_c
 ../include/oz/oz_log.h:
 
 ../src/core/oz_camera.c:
+
+../src/core/oz_debug.c:
+
+/usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdlib.h:
+
+../include/oz/render/oz_camera.h:
 
 ../include/oz/oz_platform.h:

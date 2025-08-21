@@ -1,0 +1,9 @@
+CompileFlags:
+  CompilationDatabase: build
+
+Diagnostics:
+  ClangTidy: true
+  ClangTidyChecks: '*,-llvm-header-guard,-llvmlibc-*,modernize-use-trailing-return-type'
+
+Index:
+  Background: Build

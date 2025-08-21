@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/delyzid/projects/c/OzWorld/src/platform/sdl/oz_platform_sdl.c" "CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o" "gcc" "CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o.d"
+  "/home/delyzid/projects/c/OzWorld/OzWorldEngine/src/platform/sdl/oz_platform_sdl.c" "CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o" "gcc" "CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o.d"
   )
 
 # Targets to which this target links.

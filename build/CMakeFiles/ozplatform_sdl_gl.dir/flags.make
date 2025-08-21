@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_DEFINES = -DOZ_HAVE_SDL2=1
 
-C_INCLUDES = -I/home/delyzid/projects/c/OzWorld/include -isystem /usr/include/SDL2
+C_INCLUDES = -I/home/delyzid/projects/c/OzWorld/OzWorldEngine/include -isystem /usr/include/SDL2
 
 C_FLAGS = -O2 -g -DNDEBUG -Wall -Wextra -Wshadow -Wconversion -Wstrict-prototypes -Wpedantic -std=c11
 

@@ -137,6 +137,9 @@ if(PkgConfig_FOUND)
   pkg_check_modules(GTK3 QUIET IMPORTED_TARGET gtk+-3.0)
   if(TARGET PkgConfig::GTK3)
     set(OZ_HAVE_GTK3 ON)
+  elseif(GTK3_FOUND)
+    # Fallback: pkg-config provided variables but no imported target
+    set(OZ_HAVE_GTK3 ON)
   endif()
 endif()
 
@@ -246,8 +249,21 @@ if(OZ_BUILD_EDITOR AND OZ_HAVE_GTK3)
     # Keep modern renderer
     src/render/oz_gl_modern.c
   )
+  # Link GTK3 via imported target when available, and also add
+  # include paths/flags explicitly to ensure headers like <gtk/gtk.h>
+  # and <gdk/gdk.h> are found during compilation on all systems.
   if(TARGET PkgConfig::GTK3)
     target_link_libraries(oz_editor PRIVATE PkgConfig::GTK3)
+  elseif(GTK3_FOUND)
+    # Fallback when an imported target isn't generated
+    target_link_libraries(oz_editor PRIVATE ${GTK3_LIBRARIES})
+  endif()
+
+  if(GTK3_FOUND)
+    target_include_directories(oz_editor PRIVATE ${GTK3_INCLUDE_DIRS})
+    if(GTK3_CFLAGS_OTHER)
+      target_compile_options(oz_editor PRIVATE ${GTK3_CFLAGS_OTHER})
+    endif()
   endif()
   # Allow including editor headers like "editor.h"
   target_include_directories(oz_editor PRIVATE ${CMAKE_SOURCE_DIR}/editor)

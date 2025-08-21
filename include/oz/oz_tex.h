@@ -15,10 +15,21 @@ extern "C" {
 //   <width> <height> <channels>\n   // channels currently 3 (RGB) or 4 (RGBA)
 // Payload: width*height*channels bytes, row-major, top-to-bottom
 // Returns true on success. Caller owns *out_pixels (malloc), free() when done.
-bool oz_tex_load_oztex(const char* path, int* out_w, int* out_h, int* out_channels, unsigned char** out_pixels);
+
+typedef struct OzColor3 {
+  float r;
+  float g;
+  float b;
+} OzColor;
+
+bool oz_tex_load_oztex(const char *path, int *out_w, int *out_h,
+                       int *out_channels, unsigned char **out_pixels);
 
 // Convenience: free pixels allocated by loader
-static inline void oz_tex_free(unsigned char* pixels) { if (pixels) free(pixels); }
+static inline void oz_tex_free(unsigned char *pixels) {
+  if (pixels)
+    free(pixels);
+}
 
 #ifdef __cplusplus
 }

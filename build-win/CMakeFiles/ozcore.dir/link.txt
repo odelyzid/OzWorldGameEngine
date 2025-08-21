@@ -1,0 +1,2 @@
+/usr/bin/x86_64-w64-mingw32-ar qc libozcore.a CMakeFiles/ozcore.dir/src/core/oz_log.c.obj CMakeFiles/ozcore.dir/src/core/oz_core.c.obj CMakeFiles/ozcore.dir/src/core/oz_bsp.c.obj CMakeFiles/ozcore.dir/src/core/oz_camera.c.obj CMakeFiles/ozcore.dir/src/core/oz_debug.c.obj CMakeFiles/ozcore.dir/src/core/oz_assets.c.obj CMakeFiles/ozcore.dir/src/core/oz_tex.c.obj CMakeFiles/ozcore.dir/src/core/oz_bundle.c.obj CMakeFiles/ozcore.dir/src/core/oz_audio_sdlmixer.c.obj
+/usr/bin/x86_64-w64-mingw32-ranlib libozcore.a

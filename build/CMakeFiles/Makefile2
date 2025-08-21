@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/delyzid/projects/c/OzWorld
+CMAKE_SOURCE_DIR = /home/delyzid/projects/c/OzWorld/OzWorldEngine
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/delyzid/projects/c/OzWorld/build
+CMAKE_BINARY_DIR = /home/delyzid/projects/c/OzWorld/OzWorldEngine/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -93,14 +93,14 @@ clean: CMakeFiles/oz_server.dir/clean
 CMakeFiles/ozcore.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ozcore.dir/build.make CMakeFiles/ozcore.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ozcore.dir/build.make CMakeFiles/ozcore.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=22,23,24,25,26,27,28,29,30,31,32 "Built target ozcore"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=22,23,24,25,26,27,28,29,30,31,32 "Built target ozcore"
 .PHONY : CMakeFiles/ozcore.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/ozcore.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 11
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 11
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/ozcore.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 0
 .PHONY : CMakeFiles/ozcore.dir/rule
 
 # Convenience name for target.
@@ -119,14 +119,14 @@ CMakeFiles/ozcore.dir/clean:
 CMakeFiles/ozplatform_sdl_gl.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ozplatform_sdl_gl.dir/build.make CMakeFiles/ozplatform_sdl_gl.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ozplatform_sdl_gl.dir/build.make CMakeFiles/ozplatform_sdl_gl.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=33,34 "Built target ozplatform_sdl_gl"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=33,34 "Built target ozplatform_sdl_gl"
 .PHONY : CMakeFiles/ozplatform_sdl_gl.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/ozplatform_sdl_gl.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/ozplatform_sdl_gl.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 0
 .PHONY : CMakeFiles/ozplatform_sdl_gl.dir/rule
 
 # Convenience name for target.
@@ -145,14 +145,14 @@ CMakeFiles/ozplatform_sdl_gl.dir/clean:
 CMakeFiles/ozplatform_sdl_sw.dir/all: CMakeFiles/ozcore.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ozplatform_sdl_sw.dir/build.make CMakeFiles/ozplatform_sdl_sw.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ozplatform_sdl_sw.dir/build.make CMakeFiles/ozplatform_sdl_sw.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=35,36 "Built target ozplatform_sdl_sw"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=35,36 "Built target ozplatform_sdl_sw"
 .PHONY : CMakeFiles/ozplatform_sdl_sw.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/ozplatform_sdl_sw.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 13
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 13
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/ozplatform_sdl_sw.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 0
 .PHONY : CMakeFiles/ozplatform_sdl_sw.dir/rule
 
 # Convenience name for target.
@@ -172,14 +172,14 @@ CMakeFiles/oz_demo.dir/all: CMakeFiles/ozcore.dir/all
 CMakeFiles/oz_demo.dir/all: CMakeFiles/ozplatform_sdl_gl.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/oz_demo.dir/build.make CMakeFiles/oz_demo.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/oz_demo.dir/build.make CMakeFiles/oz_demo.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=1,2,3,4 "Built target oz_demo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=1,2,3,4 "Built target oz_demo"
 .PHONY : CMakeFiles/oz_demo.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/oz_demo.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 17
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/oz_demo.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 0
 .PHONY : CMakeFiles/oz_demo.dir/rule
 
 # Convenience name for target.
@@ -199,14 +199,14 @@ CMakeFiles/oz_demo_sw.dir/all: CMakeFiles/ozcore.dir/all
 CMakeFiles/oz_demo_sw.dir/all: CMakeFiles/ozplatform_sdl_sw.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/oz_demo_sw.dir/build.make CMakeFiles/oz_demo_sw.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/oz_demo_sw.dir/build.make CMakeFiles/oz_demo_sw.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=5,6,7,8 "Built target oz_demo_sw"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=5,6,7,8 "Built target oz_demo_sw"
 .PHONY : CMakeFiles/oz_demo_sw.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/oz_demo_sw.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 17
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/oz_demo_sw.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 0
 .PHONY : CMakeFiles/oz_demo_sw.dir/rule
 
 # Convenience name for target.
@@ -225,14 +225,14 @@ CMakeFiles/oz_demo_sw.dir/clean:
 CMakeFiles/oz_editor.dir/all: CMakeFiles/ozcore.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/oz_editor.dir/build.make CMakeFiles/oz_editor.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/oz_editor.dir/build.make CMakeFiles/oz_editor.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=9,10,11,12,13,14,15,16,17,18,19 "Built target oz_editor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=9,10,11,12,13,14,15,16,17,18,19 "Built target oz_editor"
 .PHONY : CMakeFiles/oz_editor.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/oz_editor.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 22
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 22
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/oz_editor.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 0
 .PHONY : CMakeFiles/oz_editor.dir/rule
 
 # Convenience name for target.
@@ -251,14 +251,14 @@ CMakeFiles/oz_editor.dir/clean:
 CMakeFiles/oz_server.dir/all: CMakeFiles/ozcore.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/oz_server.dir/build.make CMakeFiles/oz_server.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/oz_server.dir/build.make CMakeFiles/oz_server.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=20,21 "Built target oz_server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=20,21 "Built target oz_server"
 .PHONY : CMakeFiles/oz_server.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/oz_server.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 13
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 13
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/oz_server.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles 0
 .PHONY : CMakeFiles/oz_server.dir/rule
 
 # Convenience name for target.

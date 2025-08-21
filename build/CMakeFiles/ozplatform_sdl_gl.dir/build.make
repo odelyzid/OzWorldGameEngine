@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/delyzid/projects/c/OzWorld
+CMAKE_SOURCE_DIR = /home/delyzid/projects/c/OzWorld/OzWorldEngine
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/delyzid/projects/c/OzWorld/build
+CMAKE_BINARY_DIR = /home/delyzid/projects/c/OzWorld/OzWorldEngine/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/ozplatform_sdl_gl.dir/depend.make
@@ -72,16 +72,16 @@ include CMakeFiles/ozplatform_sdl_gl.dir/flags.make
 CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o: CMakeFiles/ozplatform_sdl_gl.dir/flags.make
 CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o: ../src/platform/sdl/oz_platform_sdl.c
 CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o: CMakeFiles/ozplatform_sdl_gl.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o -MF CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o.d -o CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o -c /home/delyzid/projects/c/OzWorld/src/platform/sdl/oz_platform_sdl.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o -MF CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o.d -o CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/platform/sdl/oz_platform_sdl.c
 
 CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/platform/sdl/oz_platform_sdl.c > CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/platform/sdl/oz_platform_sdl.c > CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.i
 
 CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/platform/sdl/oz_platform_sdl.c -o CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/platform/sdl/oz_platform_sdl.c -o CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.s
 
 # Object files for target ozplatform_sdl_gl
 ozplatform_sdl_gl_OBJECTS = \
@@ -93,7 +93,7 @@ ozplatform_sdl_gl_EXTERNAL_OBJECTS =
 libozplatform_sdl.a: CMakeFiles/ozplatform_sdl_gl.dir/src/platform/sdl/oz_platform_sdl.c.o
 libozplatform_sdl.a: CMakeFiles/ozplatform_sdl_gl.dir/build.make
 libozplatform_sdl.a: CMakeFiles/ozplatform_sdl_gl.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking C static library libozplatform_sdl.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking C static library libozplatform_sdl.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/ozplatform_sdl_gl.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/ozplatform_sdl_gl.dir/link.txt --verbose=$(VERBOSE)
 
@@ -106,6 +106,6 @@ CMakeFiles/ozplatform_sdl_gl.dir/clean:
 .PHONY : CMakeFiles/ozplatform_sdl_gl.dir/clean
 
 CMakeFiles/ozplatform_sdl_gl.dir/depend:
-	cd /home/delyzid/projects/c/OzWorld/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/delyzid/projects/c/OzWorld /home/delyzid/projects/c/OzWorld /home/delyzid/projects/c/OzWorld/build /home/delyzid/projects/c/OzWorld/build /home/delyzid/projects/c/OzWorld/build/CMakeFiles/ozplatform_sdl_gl.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/delyzid/projects/c/OzWorld/OzWorldEngine/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/delyzid/projects/c/OzWorld/OzWorldEngine /home/delyzid/projects/c/OzWorld/OzWorldEngine /home/delyzid/projects/c/OzWorld/OzWorldEngine/build /home/delyzid/projects/c/OzWorld/OzWorldEngine/build /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles/ozplatform_sdl_gl.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ozplatform_sdl_gl.dir/depend
 

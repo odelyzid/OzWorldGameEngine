@@ -1,5 +1,5 @@
-#include "oz/oz_camera.h"
-#include "oz/oz_render.h"
+#include "../../include/oz/render/oz_camera.h"
+#include "../../include/oz/render/oz_render.h"
 #include <cairo/cairo.h>
 #include <math.h>
 #include <string.h>
@@ -116,7 +116,7 @@ void oz_lights_evaluate_at(const float position[3], const float normal[3],
                            float out_rgb[3]) {
   float nx = normal ? normal[0] : 0.0f, ny = normal ? normal[1] : 0.0f,
         nz = normal ? normal[2] : 1.0f;
-        
+
   float nlen = sqrtf(nx * nx + ny * ny + nz * nz);
   if (nlen > 1e-6f) {
     nx /= nlen;

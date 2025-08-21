@@ -4,7 +4,7 @@
 # compile C with /usr/bin/cc
 C_DEFINES = 
 
-C_INCLUDES = -I/home/delyzid/projects/c/OzWorld/include
+C_INCLUDES = -I/home/delyzid/projects/c/OzWorld/OzWorldEngine/include
 
 C_FLAGS = -O2 -g -DNDEBUG -Wall -Wextra -Wshadow -Wconversion -Wstrict-prototypes -Wpedantic -std=c11
 

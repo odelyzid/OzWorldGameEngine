@@ -1,0 +1,2 @@
+/usr/bin/x86_64-w64-mingw32-ar qc libozplatform_sdl.a CMakeFiles/ozplatform_sdl.dir/src/platform/sdl/oz_platform_sdl.c.obj
+/usr/bin/x86_64-w64-mingw32-ranlib libozplatform_sdl.a

@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/delyzid/projects/c/OzWorld
+CMAKE_SOURCE_DIR = /home/delyzid/projects/c/OzWorld/OzWorldEngine
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/delyzid/projects/c/OzWorld/build
+CMAKE_BINARY_DIR = /home/delyzid/projects/c/OzWorld/OzWorldEngine/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/oz_editor.dir/depend.make
@@ -72,142 +72,142 @@ include CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o: ../apps/oz_editor_modular/main.c
 CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o -MF CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o.d -o CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o -c /home/delyzid/projects/c/OzWorld/apps/oz_editor_modular/main.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o -MF CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o.d -o CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/apps/oz_editor_modular/main.c
 
 CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/apps/oz_editor_modular/main.c > CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/apps/oz_editor_modular/main.c > CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.i
 
 CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/apps/oz_editor_modular/main.c -o CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/apps/oz_editor_modular/main.c -o CMakeFiles/oz_editor.dir/apps/oz_editor_modular/main.c.s
 
 CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o: ../src/editor/modules/editor_main.c
 CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o -c /home/delyzid/projects/c/OzWorld/src/editor/modules/editor_main.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/editor_main.c
 
 CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/editor/modules/editor_main.c > CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/editor_main.c > CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.i
 
 CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/editor/modules/editor_main.c -o CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/editor_main.c -o CMakeFiles/oz_editor.dir/src/editor/modules/editor_main.c.s
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o: ../src/editor/modules/ui/ui_core.c
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o -c /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_core.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_core.c
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_core.c > CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_core.c > CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.i
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_core.c -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_core.c -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_core.c.s
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o: ../src/editor/modules/ui/ui_menus.c
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o -c /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_menus.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_menus.c
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_menus.c > CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_menus.c > CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.i
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_menus.c -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_menus.c -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_menus.c.s
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o: ../src/editor/modules/ui/ui_dialogs.c
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o -c /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_dialogs.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_dialogs.c
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_dialogs.c > CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_dialogs.c > CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.i
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_dialogs.c -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_dialogs.c -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_dialogs.c.s
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o: ../src/editor/modules/ui/ui_viewport.c
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o -c /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_viewport.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_viewport.c
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_viewport.c > CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_viewport.c > CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.i
 
 CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/editor/modules/ui/ui_viewport.c -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/ui/ui_viewport.c -o CMakeFiles/oz_editor.dir/src/editor/modules/ui/ui_viewport.c.s
 
 CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o: ../src/editor/modules/scene/scene_core.c
 CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o -c /home/delyzid/projects/c/OzWorld/src/editor/modules/scene/scene_core.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/scene/scene_core.c
 
 CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/editor/modules/scene/scene_core.c > CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/scene/scene_core.c > CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.i
 
 CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/editor/modules/scene/scene_core.c -o CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/scene/scene_core.c -o CMakeFiles/oz_editor.dir/src/editor/modules/scene/scene_core.c.s
 
 CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o: ../src/editor/modules/input/input_core.c
 CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o -c /home/delyzid/projects/c/OzWorld/src/editor/modules/input/input_core.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/input/input_core.c
 
 CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/editor/modules/input/input_core.c > CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/input/input_core.c > CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.i
 
 CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/editor/modules/input/input_core.c -o CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/input/input_core.c -o CMakeFiles/oz_editor.dir/src/editor/modules/input/input_core.c.s
 
 CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o: ../src/editor/modules/rendering/rendering_core.c
 CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o -c /home/delyzid/projects/c/OzWorld/src/editor/modules/rendering/rendering_core.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o -MF CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o.d -o CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/rendering/rendering_core.c
 
 CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/editor/modules/rendering/rendering_core.c > CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/rendering/rendering_core.c > CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.i
 
 CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/editor/modules/rendering/rendering_core.c -o CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/editor/modules/rendering/rendering_core.c -o CMakeFiles/oz_editor.dir/src/editor/modules/rendering/rendering_core.c.s
 
 CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o: CMakeFiles/oz_editor.dir/flags.make
 CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o: ../src/render/oz_gl_modern.c
 CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o: CMakeFiles/oz_editor.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o -MF CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o.d -o CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o -c /home/delyzid/projects/c/OzWorld/src/render/oz_gl_modern.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o -MF CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o.d -o CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.o -c /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/render/oz_gl_modern.c
 
 CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/src/render/oz_gl_modern.c > CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.i
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/render/oz_gl_modern.c > CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.i
 
 CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/src/render/oz_gl_modern.c -o CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.s
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/delyzid/projects/c/OzWorld/OzWorldEngine/src/render/oz_gl_modern.c -o CMakeFiles/oz_editor.dir/src/render/oz_gl_modern.c.s
 
 # Object files for target oz_editor
 oz_editor_OBJECTS = \
@@ -256,7 +256,7 @@ oz_editor: /usr/lib/x86_64-linux-gnu/libX11.so
 oz_editor: /usr/lib/x86_64-linux-gnu/libGLU.so
 oz_editor: /usr/lib/x86_64-linux-gnu/libcairo.so
 oz_editor: CMakeFiles/oz_editor.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/delyzid/projects/c/OzWorld/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking C executable oz_editor"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking C executable oz_editor"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/oz_editor.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -268,6 +268,6 @@ CMakeFiles/oz_editor.dir/clean:
 .PHONY : CMakeFiles/oz_editor.dir/clean
 
 CMakeFiles/oz_editor.dir/depend:
-	cd /home/delyzid/projects/c/OzWorld/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/delyzid/projects/c/OzWorld /home/delyzid/projects/c/OzWorld /home/delyzid/projects/c/OzWorld/build /home/delyzid/projects/c/OzWorld/build /home/delyzid/projects/c/OzWorld/build/CMakeFiles/oz_editor.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/delyzid/projects/c/OzWorld/OzWorldEngine/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/delyzid/projects/c/OzWorld/OzWorldEngine /home/delyzid/projects/c/OzWorld/OzWorldEngine /home/delyzid/projects/c/OzWorld/OzWorldEngine/build /home/delyzid/projects/c/OzWorld/OzWorldEngine/build /home/delyzid/projects/c/OzWorld/OzWorldEngine/build/CMakeFiles/oz_editor.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/oz_editor.dir/depend
 

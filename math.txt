@@ -1,0 +1,283 @@
+Quake Math Routines: Analysis of mathlib.c and math.s
+This document provides a comprehensive analysis of the mathematical primitives in the mathlib.c (C code) and math.s (x86 assembly) files from the Quake source code, released by Id Software under the GNU General Public License. These routines implement core mathematical operations for 3D graphics and game physics, optimized for performance on 1990s hardware. The document covers the mathematical principles, assembly implementation details (including registers and instructions), and practical applications in Quake's game engine. It is designed for readability in a Vim terminal with an 80-column width.
+1. Introduction
+The mathlib.c and math.s files contain low-level mathematical functions used in Quake, a pioneering 3D first-person shooter. The C functions in mathlib.c provide portable implementations of vector operations, plane projections, rotations, and numerical utilities, while math.s offers x86-specific assembly optimizations for performance-critical operations. These routines are integral to rendering, collision detection, and physics calculations in the game.
+1.1. x86 Registers and Assembly Instructions
+The math.s file uses x86 assembly for the Intel 386 architecture (id386). Below are the key registers and instructions used:
+
+Registers:
+
+General-Purpose Registers:
+%eax: Accumulator, used for return values, arithmetic, and temporary storage.
+%ecx: Counter or input storage (e.g., for division in Invert24To16).
+%edx: Data register, used for division (high bits) or pointers.
+%ebx: Base register, used for pointers (e.g., emaxs in BoxOnPlaneSide).
+%esp: Stack pointer, for accessing function parameters.
+
+
+FPU Registers:
+%st(0) to %st(7): Floating-point stack registers for floating-point operations in TransformVector and BoxOnPlaneSide.
+
+
+Status Registers:
+%ax: Used with fnstsw to transfer FPU status flags for condition checks.
+
+
+
+
+Key Instructions:
+
+movl: Moves 32-bit data between registers or memory.
+divl: Performs 64-bit unsigned division (%edx:%eax / operand).
+flds: Loads a floating-point value onto the FPU stack.
+fmuls: Multiplies the top FPU register (%st(0)) by a memory value.
+faddp: Adds two FPU registers and pops one from the stack.
+fxch: Swaps two FPU registers (e.g., %st(0) with %st(n)).
+fstps: Stores the top FPU register to memory and pops it.
+fcomps: Compares the top FPU register with a memory value and pops.
+fnstsw: Transfers FPU status to %ax for condition checking.
+jmp: Jumps to a label, including table-based jumps (e.g., Ljmptab).
+andb, xorb, addb: Bitwise operations for flag manipulation.
+
+
+
+1.2. Practical Context
+Quake, released in 1996, required efficient mathematical computations for real-time 3D rendering and physics on hardware with limited floating-point capabilities. The mathlib.c functions provide portable implementations, while math.s optimizes performance-critical operations for x86 CPUs, leveraging the Floating-Point Unit (FPU) and integer instructions. These routines are used in:
+
+Rendering: Transforming vectors for camera and object orientations.
+Collision Detection: Classifying objects relative to planes in BSP trees.
+Physics: Calculating rotations and distances for player movement and interactions.
+Texture Mapping: Using fixed-point arithmetic for perspective calculations.
+
+2. Mathematical Principles and Implementations
+Below, each function is analyzed with its mathematical foundation, implementation details (C or assembly), and practical use. Functions from math.s include register and instruction details.
+2.1. Vector Operations (mathlib.c)
+These functions operate on 3D vectors (vec3_t), represented as arrays [x, y, z].
+a. Dot Product (_DotProduct)
+
+Principle: Computes the dot product of two vectors:[\mathbf{v1} \cdot \mathbf{v2} = v1_x v2_x + v1_y v2_y + v1_z v2_z]
+Purpose: Used for projections, angle calculations, and lighting.
+Implementation: Multiplies corresponding components and sums them in C.
+Use in Quake: Calculates distances to planes, light intensities, and angles between vectors.
+
+b. Cross Product (CrossProduct)
+
+Principle: Computes a vector perpendicular to two input vectors:[\mathbf{v1} \times \mathbf{v2} = \begin{bmatrix}v1_y v2_z - v1_z v2_y \v1_z v2_x - v1_x v2_z \v1_x v2_y - v1_y v2_x\end{bmatrix}]
+Purpose: Generates normal vectors or orthogonal bases.
+Implementation: Computes each component using the determinant formula in C.
+Use in Quake: Constructs coordinate systems for rotations and plane normals.
+
+c. Vector Addition/Subtraction (_VectorAdd, _VectorSubtract)
+
+Principle: Element-wise operations:[\mathbf{v1} \pm \mathbf{v2} = [v1_x \pm v2_x, v1_y \pm v2_y, v1_z \pm v2_z]]
+Purpose: Translates points or computes differences.
+Implementation: Component-wise addition/subtraction in C.
+Use in Quake: Moves objects or calculates relative positions.
+
+d. Vector Scaling (VectorScale)
+
+Principle: Scales a vector by a scalar:[s \mathbf{v} = [s v_x, s v_y, s v_z]]
+Purpose: Adjusts vector magnitude.
+Implementation: Multiplies each component by the scalar in C.
+Use in Quake: Scales velocities or directions in physics.
+
+e. Vector Length and Normalization (Length, VectorNormalize)
+
+Principle:
+Length: Euclidean norm:[|\mathbf{v}| = \sqrt{v_x^2 + v_y^2 + v_z^2}]
+Normalization: Scales to unit length:[\hat{\mathbf{v}} = \frac{\mathbf{v}}{|\mathbf{v}|}]
+
+
+Purpose: Measures distances; normalization provides direction vectors.
+Implementation: Uses sqrt for length; divides components by length in C.
+Use in Quake: Normalizes vectors for lighting, reflections, or direction calculations.
+
+f. Vector Comparison and Copy (VectorCompare, _VectorCopy)
+
+Principle: Compares vectors for equality or copies components.
+Purpose: Utility functions for vector operations.
+Implementation: Component-wise comparison or assignment in C.
+Use in Quake: Checks for identical positions or duplicates vectors.
+
+g. Vector Inverse (VectorInverse)
+
+Principle: Negates components:[-\mathbf{v} = [-v_x, -v_y, -v_z]]
+Purpose: Reverses vector direction.
+Implementation: Negates each component in C.
+Use in Quake: Inverts directions for reflections or opposites.
+
+h. Vector Multiply-Add (VectorMA)
+
+Principle: Computes:[\mathbf{vecc} = \mathbf{veca} + s \cdot \mathbf{vecb}]
+Purpose: Linearly combines vectors.
+Implementation: Scales vecb and adds to veca in C.
+Use in Quake: Interpolates positions or applies scaled offsets.
+
+2.2. Plane and Vector Projections (mathlib.c)
+These functions handle interactions between points, vectors, and planes.
+a. Project Point onto Plane (ProjectPointOnPlane)
+
+Principle: Projects a point ( \mathbf{p} ) onto a plane with normal ( \mathbf{n} ):[\mathbf{dst} = \mathbf{p} - (\mathbf{n} \cdot \mathbf{p}) \cdot \frac{\mathbf{n}}{\mathbf{n} \cdot \mathbf{n}}]
+Purpose: Finds the closest point on a plane.
+Implementation: Computes dot products, normalizes the normal, and subtracts the projection in C.
+Use in Quake: Used in collision detection and shadow calculations.
+
+b. Perpendicular Vector (PerpendicularVector)
+
+Principle: Finds a vector perpendicular to a normalized vector ( \mathbf{src} ) by selecting the axis with the smallest component, creating a basis vector, and projecting it onto the plane defined by ( \mathbf{src} ).
+Purpose: Constructs orthogonal vectors for coordinate systems.
+Implementation: Identifies the smallest component, projects, and normalizes in C.
+Use in Quake: Builds basis vectors for rotations.
+
+c. Box on Plane Side (BoxOnPlaneSide)
+
+Principle: Determines if an AABB (emins, emaxs) is on the positive side (1), negative side (2), or spans (3) a plane (( \mathbf{n} \cdot \mathbf{x} = d )).
+Computes:[\text{dist1} = \mathbf{n} \cdot \mathbf{p}{\text{max}}, \quad \text{dist2} = \mathbf{n} \cdot \mathbf{p}{\text{min}}]where ( \mathbf{p}_{\text{max/min}} ) are chosen based on normal signs.
+
+
+Purpose: Classifies boxes in collision detection.
+Implementation: Uses a switch-case on signbits to compute dot products in C.
+Use in Quake: BSP tree traversal for collision detection.
+
+2.3. Rotations and Transformations (mathlib.c)
+These functions handle 3D rotations and matrix operations.
+a. Rotate Point Around Vector (RotatePointAroundVector)
+
+Principle: Rotates a point ( \mathbf{p} ) around an axis ( \mathbf{dir} ) by angle ( \theta ):
+Constructs an orthonormal basis (( \mathbf{vf} = \mathbf{dir} ), ( \mathbf{vr} ), ( \mathbf{vup} )).
+Builds a rotation matrix:[\mathbf{R} = \mathbf{M} \cdot \mathbf{Z} \cdot \mathbf{M}^{-1}]where ( \mathbf{Z} ) is the z-axis rotation matrix:[\mathbf{Z} = \begin{bmatrix}\cos\theta & \sin\theta & 0 \-\sin\theta & \cos\theta & 0 \0 & 0 & 1\end{bmatrix}]
+
+
+Purpose: Rotates objects or cameras.
+Implementation: Uses PerpendicularVector, CrossProduct, and R_ConcatRotations in C.
+Use in Quake: Rotates player or object orientations.
+
+b. Concatenate Rotations (R_ConcatRotations)
+
+Principle: Multiplies two 3x3 rotation matrices:[\text{out}{ij} = \sum_k \text{in1}{ik} \cdot \text{in2}_{kj}]
+Purpose: Combines rotations.
+Implementation: Performs matrix multiplication in C.
+Use in Quake: Chains rotation transformations.
+
+c. Concatenate Transforms (R_ConcatTransforms)
+
+Principle: Multiplies two 3x4 transformation matrices (rotation + translation).
+Purpose: Applies combined transformations.
+Implementation: Matrix multiplication with translation in C.
+Use in Quake: Transforms objects in world space.
+
+d. Angle Vectors (AngleVectors)
+
+Principle: Converts Euler angles (yaw, pitch, roll) to three basis vectors (forward, right, up) using trigonometric functions:[\begin{aligned}\text{forward} &= [\cos p \cos y, \cos p \sin y, -\sin p] \\text{right} &= [-\sin r \sin p \cos y - \cos r \sin y, \dots] \\text{up} &= [\cos r \sin p \cos y - \sin r \sin y, \dots]]
+Purpose: Defines camera or object orientation.
+Implementation: Uses sin and cos in C.
+Use in Quake: Sets up view or model coordinate systems.
+
+2.4. Numerical Utilities (mathlib.c)
+These functions handle numerical computations.
+a. Angle Modulo (anglemod)
+
+Principle: Normalizes an angle to [0, 360) using fixed-point arithmetic:[a = \left( \frac{360}{65536} \right) \cdot \left( \left\lfloor a \cdot \frac{65536}{360} \right\rfloor \mod 65536 \right)]
+Purpose: Ensures angles stay within a valid range.
+Implementation: Uses bit operations in C.
+Use in Quake: Normalizes rotation angles.
+
+b. Floor Division and Modulo (FloorDivMod)
+
+Principle: Computes quotient and remainder for integers using floor division:[q = \lfloor \frac{n}{d} \rfloor, \quad r = n - q \cdot d]Adjusts for negative numerators.
+Purpose: Integer division for fixed-point arithmetic.
+Implementation: Handles positive/negative cases in C.
+Use in Quake: Used in texture mapping or grid calculations.
+
+c. Greatest Common Divisor (GreatestCommonDivisor)
+
+Principle: Uses the Euclidean algorithm:[\gcd(a, b) = \gcd(b, a \mod b)]
+Purpose: Finds common factors.
+Implementation: Recursive modulo in C.
+Use in Quake: Simplifies ratios in calculations.
+
+2.5. Assembly-Optimized Functions (math.s)
+These functions are x86-specific optimizations.
+a. Invert24To16
+
+Principle: Converts an 8.24 fixed-point number to 16.16 format:[\text{result} = \left\lfloor \frac{2^{32}}{x} \right\rfloor]Returns ( 0xFFFFFFFF ) if ( x \leq 256 ).
+Purpose: High-precision division for texture mapping.
+Implementation:
+Registers: %eax (result), %ecx (input), %edx (dividend high bits).
+Instructions:
+movl val(%esp),%ecx: Loads input.
+movl $0x100,%edx: Sets dividend high bits.
+divl %ecx: Divides %edx:%eax by %ecx.
+jle LOutOfRange: Checks for invalid input.
+
+
+Logic: Performs integer division; handles overflow.
+
+
+Use in Quake: Perspective calculations in rendering.
+
+b. TransformVector
+
+Principle: Transforms a vector ( \mathbf{in} ) into a basis defined by ( \mathbf{vright} ), ( \mathbf{vup} ), ( \mathbf{vpn} ):[\text{out} = \begin{bmatrix}vright_x & vright_y & vright_z \vup_x & vup_y & vup_z \vpn_x & vpn_y & vpn_z\end{bmatrix} \cdot \mathbf{in}]
+Purpose: Changes coordinate systems.
+Implementation:
+Registers: %eax (input pointer), %edx (output pointer), FPU stack (%st(0)–%st(7)).
+Instructions:
+flds, fmuls: Load and multiply vector components.
+faddp: Accumulate dot products.
+fxch: Reorder FPU stack.
+fstps: Store results.
+
+
+Logic: Computes three dot products using FPU, storing results in out.
+
+
+Use in Quake: Transforms vectors for rendering (e.g., world to view space).
+
+c. BoxOnPlaneSide
+
+Principle: Classifies an AABB relative to a plane:[\text{dist1} = \mathbf{n} \cdot \mathbf{p}{\text{max}}, \quad \text{dist2} = \mathbf{n} \cdot \mathbf{p}{\text{min}}]Returns 1, 2, or 3 based on comparisons with plane distance ( d ).
+Purpose: Collision detection in BSP trees.
+Implementation:
+Registers: %eax (signbits, result), %ebx (emaxs), %ecx (emins, sides), %edx (plane), FPU stack.
+Instructions:
+jmp Ljmptab(,%eax,4): Dispatches to case based on signbits.
+flds, fmuls, faddp: Compute dot products.
+fcomps, fnstsw: Compare distances and set flags.
+andb, xorb, addb: Compute sides.
+
+
+Logic: Uses a jump table for eight cases based on normal signs, computes dot products, and sets flags.
+
+
+Use in Quake: Determines object positions in BSP traversal.
+
+3. Practical Applications in Quake
+
+Rendering Pipeline:
+TransformVector and AngleVectors set up view matrices for rendering.
+RotatePointAroundVector adjusts object orientations.
+
+
+Collision Detection:
+BoxOnPlaneSide classifies objects in BSP trees for efficient collision checks.
+ProjectPointOnPlane aids in resolving collisions.
+
+
+Physics:
+Vector operations (_DotProduct, VectorMA, etc.) calculate velocities and positions.
+FloorDivMod supports fixed-point physics calculations.
+
+
+Texture Mapping:
+Invert24To16 optimizes perspective-correct texture mapping.
+
+
+Optimization:
+Assembly routines reduce CPU cycles, critical for 1990s hardware.
+FPU usage in math.s leverages hardware floating-point support.
+
+
+
+4. Conclusion
+The mathlib.c and math.s files form the mathematical backbone of Quake, providing efficient vector, plane, and transformation operations. The C code ensures portability, while the assembly code optimizes performance for x86 systems. Understanding these routines reveals the ingenuity of 1990s game development, balancing mathematical precision with real-time constraints.
