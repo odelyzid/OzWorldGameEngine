@@ -20,7 +20,7 @@ typedef enum OzLightType {
 typedef struct OzLight {
   OzLightType type;
   OzVec3 position;
-  OzColor3 color_rgb;
+  struct OzColor3 color_rgb;
   float intensity;
   float radius;
 

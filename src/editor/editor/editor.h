@@ -4,6 +4,8 @@
 #include <gtk/gtk.h>
 #include "oz/oz_bsp.h"
 #include "oz/oz_camera.h"
+#include "oz/render/oz_bsp.h"
+#include "oz/render/oz_camera.h"
 
 // Forward declaration to avoid circular includes
 typedef struct OzGLModern OzGLModern;

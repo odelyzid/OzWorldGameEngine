@@ -1,9 +1,9 @@
 #include "oz/oz_core.h"
 #include "oz/oz_platform.h"
 #include "oz/oz_log.h"
-#include "oz/oz_bsp.h"
-#include "oz/oz_camera.h"
-#include "oz/oz_render.h"
+#include "oz/render/oz_bsp.h"
+#include "oz/render/oz_camera.h"
+#include "oz/render/oz_render.h"
 #include <cairo/cairo.h>
 #include <string.h>
 #include <stdio.h>

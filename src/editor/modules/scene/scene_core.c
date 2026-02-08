@@ -1,4 +1,5 @@
 #include "oz/editor/scene.h"
+#include "oz/editor/input.h"
 #include "oz/oz_log.h"
 #include <stdlib.h>
 #include <string.h>
@@ -342,7 +343,7 @@ void editor_scene_clear_selection(EditorScene* scene) {
 void editor_scene_update_camera(EditorScene* scene, float dt) {
     if (!scene) return;
     
-    scene->last_inst_speed = oz_camera_update_freemove(&scene->camera, dt, NULL);
+    scene->last_inst_speed = oz_camera_update_freemove(&scene->camera, dt, input_oz_key_query);
     scene->fps = dt > 0.0001f ? 1.0f / dt : 60.0f;
 }
 

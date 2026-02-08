@@ -1,16 +1,16 @@
 // This file now only contains the editor UI implementation (activate impl) and
 // related callbacks.
-#include "editor.h"
-#include "oz/editor_app.h"
-#include "oz/editor_input.h"
-#include "oz/editor_ui.h"
+#include "oz/editor.h"
+#include "oz/editor/editor_entrypoint.h"
+#include "oz/editor/input.h"
+#include "oz/editor/ui.h"
 #include "oz/oz_assets.h"
-#include "oz/oz_bsp.h"
+#include "oz/render/oz_bsp.h"
 #include "oz/oz_bundle.h"
-#include "oz/oz_camera.h"
+#include "oz/render/oz_camera.h"
 #include "oz/oz_log.h"
-#include "oz/oz_render.h"
-#include "oz/oz_gl_modern.h"
+#include "oz/render/oz_render.h"
+#include "oz/render/oz_gl_modern.h"
 #include "oz/oz_tex.h"
 #include <GL/gl.h>
 #include <glib.h>

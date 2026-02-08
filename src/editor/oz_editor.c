@@ -1,6 +1,5 @@
-#include "oz/oz_bsp.h"
-#include "oz/oz_camera.h"
-#include "oz/oz_platform.h"
+#include "oz/render/oz_bsp.h"
+#include "oz/render/oz_camera.h"
 #include <string.h>
 
 // Minimal in-process editor state and operations for the software demo.

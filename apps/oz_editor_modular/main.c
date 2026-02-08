@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 int main(int argc, char** argv) {
+    gtk_init(&argc, &argv);
     OZ_INFO("Starting OzWorld Editor (Modular Version)");
-    
     // Create editor instance
     OzEditor* editor = oz_editor_create();
     if (!editor) {

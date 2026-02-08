@@ -1,6 +1,6 @@
 #include "oz/oz_core.h"
 #include "oz/oz_log.h"
-#include "oz/oz_bsp.h"
+#include "oz/render/oz_bsp.h"
 
 #include <stdio.h>
 #include <stdlib.h>

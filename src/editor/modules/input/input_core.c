@@ -10,7 +10,6 @@ static void input_update_key_states(EditorInput* input);
 static void input_handle_camera_movement(EditorInput* input, float dt);
 static void input_handle_selection_picking(EditorInput* input, double x, double y);
 static void input_handle_transform_gizmo(EditorInput* input, double x, double y);
-static bool input_oz_key_query(enum OzKey key);
 
 // Global pointer for OzKey compatibility
 static EditorInput* g_current_input = NULL;
@@ -86,7 +85,7 @@ bool editor_input_is_key_down(EditorInput* input, enum OzKey key) {
 }
 
 // Compatibility function for oz_camera_update_*
-static bool input_oz_key_query(enum OzKey key) {
+bool input_oz_key_query(enum OzKey key) {
     return editor_input_is_key_down(g_current_input, key);
 }
 

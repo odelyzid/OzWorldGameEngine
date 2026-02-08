@@ -1,8 +1,8 @@
 #ifndef OZ_EDITOR_H
 #define OZ_EDITOR_H
 
-#include "oz/oz_bsp.h"
-#include "oz/oz_camera.h"
+#include "oz/render/oz_bsp.h"
+#include "oz/render/oz_camera.h"
 
 void oz_editor_init(OzMap* target_map);
 OzWorldProps* oz_editor_world_props(void);

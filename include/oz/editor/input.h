@@ -46,6 +46,7 @@ void editor_input_reset(EditorInput *input);
 
 // Key State Query (compatible with OzKey enum)
 bool editor_input_is_key_down(EditorInput *input, enum OzKey key);
+bool input_oz_key_query(enum OzKey key);
 bool editor_input_is_key_pressed(EditorInput *input,
                                  enum OzKey key); // Single frame press
 bool editor_input_is_key_released(EditorInput *input,

@@ -92,31 +92,6 @@ bool oz_editor_initialize(OzEditor* editor, int argc, char** argv) {
         return false;
     }
     
-    editor->ui = editor_ui_create(editor->app);
-    if (!editor->ui) {
-        OZ_ERROR("Failed to create UI module");
-        return false;
-    }
-    
-    editor->input = editor_input_create(editor->ui, editor->scene);
-    if (!editor->input) {
-        OZ_ERROR("Failed to create input module");
-        return false;
-    }
-    
-    // Link modules together
-    editor_ui_set_scene(editor->ui, editor->scene);
-    editor_ui_set_input(editor->ui, editor->input);
-    
-    // Connect input events after all modules are set up
-    editor_ui_connect_input_events(editor->ui);
-    
-    // Setup default configuration
-    editor_setup_default_config(editor);
-    
-    // Load configuration if available
-    oz_editor_load_config(editor);
-    
     editor->initialized = true;
     OZ_INFO("OzWorld Editor initialized successfully");
     
@@ -177,7 +152,7 @@ int oz_editor_run(OzEditor* editor) {
     
     // Run GTK application
     int result = g_application_run(G_APPLICATION(editor->app), 0, NULL);
-    
+
     OZ_INFO("OzWorld Editor main loop ended with result: %d", result);
     return result;
 }
@@ -397,13 +372,35 @@ void oz_editor_set_scene_modified(OzEditor* editor, bool modified) {
 void oz_editor_on_activate(GtkApplication* app, gpointer user_data) {
     (void)app;
     OzEditor* editor = (OzEditor*)user_data;
-    
+
+    editor->ui = editor_ui_create(editor->app);
+    if (!editor->ui) {
+        OZ_ERROR("Failed to create UI module");
+    }
+
+    editor->input = editor_input_create(editor->ui, editor->scene);
+    if (!editor->input) {
+        OZ_ERROR("Failed to create input module");
+    }
+
     if (!editor || !editor->ui) return;
-    
-    OZ_INFO("Application activated");
-    
+
+    // Link modules together
+    editor_ui_set_scene(editor->ui, editor->scene);
+    editor_ui_set_input(editor->ui, editor->input);
+
+    // Connect input events after all modules are set up
+    editor_ui_connect_input_events(editor->ui);
+
+    // Setup default configuration
+    editor_setup_default_config(editor);
+
+    // Load configuration if available
+    oz_editor_load_config(editor);
     // Show the main window
     editor_ui_show(editor->ui);
+
+    OZ_INFO("Application activated");
     
     // Start update timer
     g_timeout_add(16, editor_tick_callback, editor); // ~60 FPS

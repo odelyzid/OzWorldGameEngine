@@ -1,4 +1,4 @@
-#include "oz/oz_gl_modern.h"
+#include "oz/render/oz_gl_modern.h"
 #include "oz/oz_log.h"
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>

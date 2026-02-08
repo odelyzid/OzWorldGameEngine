@@ -3,9 +3,9 @@
 #include "oz/oz_log.h"
 
 #include <math.h>
-#include "oz/oz_bsp.h"
-#include "oz/oz_camera.h"
-#include "oz/oz_render.h"
+#include "oz/render/oz_bsp.h"
+#include "oz/render/oz_camera.h"
+#include "oz/render/oz_render.h"
 #include "oz/oz_audio.h"
 #ifdef OZ_HAVE_SDL2
 #include <GL/gl.h>

@@ -2,8 +2,8 @@
 #define OZ_EDITOR_UI_H
 
 #include <gtk/gtk.h>
-#include "oz/oz_bsp.h"
-#include "oz/oz_camera.h"
+#include "oz/render/oz_bsp.h"
+#include "oz/render/oz_camera.h"
 
 #ifdef __cplusplus
 extern "C" {

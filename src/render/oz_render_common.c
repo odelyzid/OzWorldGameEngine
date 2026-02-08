@@ -19,12 +19,12 @@ int oz_lights_add_point(float x, float y, float z, float r, float g, float b,
   OzLight *L = &g_lights[g_light_count++];
   memset(L, 0, sizeof(*L));
   L->type = OZ_LIGHT_POINT;
-  L->position[0] = x;
-  L->position[1] = y;
-  L->position[2] = z;
-  L->color_rgb[0] = r;
-  L->color_rgb[1] = g;
-  L->color_rgb[2] = b;
+  L->position.x = x;
+  L->position.y = y;
+  L->position.z = z;
+  L->color_rgb.r = r;
+  L->color_rgb.g = g;
+  L->color_rgb.b = b;
   L->intensity = intensity;
   L->radius = radius;
   L->enabled = 1;
@@ -39,9 +39,9 @@ int oz_lights_add_spot(float x, float y, float z, float dx, float dy, float dz,
   OzLight *L = &g_lights[g_light_count++];
   memset(L, 0, sizeof(*L));
   L->type = OZ_LIGHT_SPOT;
-  L->position[0] = x;
-  L->position[1] = y;
-  L->position[2] = z;
+  L->position.x = x;
+  L->position.y = y;
+  L->position.z = z;
   float len = sqrtf(dx * dx + dy * dy + dz * dz);
   if (len < 1e-6f) {
     dx = 0;
@@ -52,11 +52,11 @@ int oz_lights_add_spot(float x, float y, float z, float dx, float dy, float dz,
   L->direction[0] = dx / len;
   L->direction[1] = dy / len;
   L->direction[2] = dz / len;
-  L->cone_angle_deg = cone_angle_deg <= 0.0f ? 15.0f : cone_angle_deg;
+  L->cone_angle_def = cone_angle_deg <= 0.0f ? 15.0f : cone_angle_deg;
   L->falloff = falloff <= 0.0f ? 2.0f : falloff;
-  L->color_rgb[0] = r;
-  L->color_rgb[1] = g;
-  L->color_rgb[2] = b;
+  L->color_rgb.r = r;
+  L->color_rgb.g = g;
+  L->color_rgb.b = b;
   L->intensity = intensity;
   L->radius = radius;
   L->enabled = 1;
@@ -71,12 +71,12 @@ int oz_lights_add_wave(float x, float y, float z, float r, float g, float b,
   OzLight *L = &g_lights[g_light_count++];
   memset(L, 0, sizeof(*L));
   L->type = OZ_LIGHT_WAVE;
-  L->position[0] = x;
-  L->position[1] = y;
-  L->position[2] = z;
-  L->color_rgb[0] = r;
-  L->color_rgb[1] = g;
-  L->color_rgb[2] = b;
+  L->position.x = x;
+  L->position.y = y;
+  L->position.z = z;
+  L->color_rgb.r = r;
+  L->color_rgb.g = g;
+  L->color_rgb.b = b;
   L->intensity = base_intensity;
   L->radius = radius;
   L->enabled = 1;
@@ -128,9 +128,9 @@ void oz_lights_evaluate_at(const float position[3], const float normal[3],
     const OzLight *L = &g_lights[i];
     if (!L->enabled)
       continue;
-    float vx = L->position[0] - position[0];
-    float vy = L->position[1] - position[1];
-    float vz = L->position[2] - position[2];
+    float vx = L->position.x - position[0];
+    float vy = L->position.y - position[1];
+    float vz = L->position.z - position[2];
     float d = sqrtf(vx * vx + vy * vy + vz * vz);
     if (d < 1e-6f)
       d = 1e-6f;
@@ -156,7 +156,7 @@ void oz_lights_evaluate_at(const float position[3], const float normal[3],
       float ndotm =
           -(L->direction[0] * vxn + L->direction[1] * vyn +
             L->direction[2] * vzn); // -dir points along spotlight axis
-      float cmin = cosf((L->cone_angle_deg > 0.0f ? L->cone_angle_deg : 15.0f) *
+      float cmin = cosf((L->cone_angle_def > 0.0f ? L->cone_angle_def : 15.0f) *
                         3.14159265f / 180.0f);
       if (ndotm <= cmin)
         cone = 0.0f;
@@ -165,9 +165,9 @@ void oz_lights_evaluate_at(const float position[3], const float normal[3],
                     (L->falloff > 0.0f ? L->falloff : 2.0f));
     }
     float s = I * att * lambert * cone;
-    acc[0] += L->color_rgb[0] * s;
-    acc[1] += L->color_rgb[1] * s;
-    acc[2] += L->color_rgb[2] * s;
+    acc[0] += L->color_rgb.r * s;
+    acc[1] += L->color_rgb.g * s;
+    acc[2] += L->color_rgb.b * s;
   }
   out_rgb[0] = saturatef(acc[0]);
   out_rgb[1] = saturatef(acc[1]);
